@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#0a0a0c">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Trainingsplan">
+<title>Trainingsplan</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;900&family=Barlow:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;background:#0a0a0c;color:#f0ede8;font-family:'Barlow',sans-serif;overflow:hidden}
+#app{display:flex;flex-direction:column;height:100dvh;height:100vh}
+.header{background:linear-gradient(160deg,#1a0a2e,#3d0f5a);padding:48px 16px 12px;flex-shrink:0;border-bottom:1px solid rgba(255,255,255,.07)}
+.header-label{font-size:10px;letter-spacing:.3em;color:#c77dff;text-transform:uppercase;font-weight:700;font-family:'Barlow Condensed',sans-serif}
+.header h1{font-family:'Barlow Condensed',sans-serif;font-size:28px;font-weight:900;letter-spacing:-.02em;line-height:1;margin:3px 0 7px}
+.badges{display:flex;gap:6px;flex-wrap:wrap}
+.badge{background:rgba(255,255,255,.08);border-radius:20px;padding:3px 9px;font-size:10px}
+.content{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.tab{display:none;padding:14px}
+.tab.active{display:block}
+.bottom-nav{display:flex;background:#111113;border-top:1px solid rgba(255,255,255,.07);flex-shrink:0;padding-bottom:env(safe-area-inset-bottom,0px)}
+.nav-btn{flex:1;padding:10px 4px 7px;background:none;border:none;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;color:#6b7280;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;border-top:2px solid transparent;transition:all .2s;font-family:'Barlow',sans-serif}
+.nav-btn.active{color:#c77dff;border-top-color:#c77dff}
+.nav-icon{font-size:20px}
+.week-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:14px}
+.day-pill{padding:10px 6px;border-radius:14px;border:2px solid rgba(255,255,255,.08);background:#141416;cursor:pointer;transition:all .2s;text-align:center}
+.pill-emoji{font-size:18px;margin-bottom:3px}
+.pill-tag{font-weight:700;font-size:12px}
+.pill-focus{font-size:9px;color:#6b7280;margin-top:2px;line-height:1.2}
+.pill-bar{margin-top:5px;height:3px;background:rgba(255,255,255,.1);border-radius:10px;overflow:hidden}
+.pill-fill{height:100%;border-radius:10px;transition:width .3s}
+.day-hdr{border-radius:16px;padding:14px 16px;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center}
+.dh-pct{font-family:'Barlow Condensed',sans-serif;font-size:34px;font-weight:900;line-height:1}
+.ex-card{background:#141416;border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:14px;margin-bottom:10px}
+.ex-name{font-weight:700;font-size:16px;line-height:1.2}
+.ex-detail{font-size:11px;color:#6b7280;margin-top:2px;margin-bottom:8px}
+.ex-tags{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+.ex-tag{padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700}
+.set-row{display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap}
+.set-btn{width:42px;height:42px;border-radius:12px;border:2px solid rgba(255,255,255,.15);background:#1c1c1f;color:#6b7280;font-weight:700;font-size:15px;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center}
+.ex-body{display:none}
+.ex-body.open{display:block}
+.ex-tip{background:rgba(255,255,255,.04);border-radius:10px;padding:8px 10px;font-size:12px;color:#9ca3af;border-left:3px solid;line-height:1.5;margin-bottom:10px}
+.yt-btn{display:flex;align-items:center;gap:8px;background:#ff000018;border:1px solid #ff000040;border-radius:10px;padding:10px 12px;text-decoration:none;color:#ff4444;font-weight:700;font-size:13px}
+.tip-card{background:#141416;border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:14px;margin-bottom:10px;display:flex;gap:12px;align-items:flex-start}
+.tip-icon{font-size:26px;flex-shrink:0}
+.tip-title{font-weight:700;font-size:15px;margin-bottom:4px}
+.tip-text{font-size:13px;color:#9ca3af;line-height:1.55}
+.section-title{font-weight:700;font-size:18px;color:#c77dff;margin-bottom:12px;font-family:'Barlow Condensed',sans-serif;letter-spacing:.02em}
+.section-sub{font-size:13px;color:#9ca3af;margin-bottom:14px;line-height:1.5}
+.info-box{border-radius:16px;padding:14px;margin-top:6px}
+.info-title{font-weight:700;font-size:15px;margin-bottom:6px}
+.info-text{font-size:13px;color:#9ca3af;line-height:1.6}
+.expand-arrow{color:#6b7280;font-size:16px;margin-left:8px;flex-shrink:0;transition:transform .2s}
+.rest-card{background:linear-gradient(135deg,#1a1a2e,#141416);border:1px solid rgba(255,255,255,.1);border-radius:16px;padding:20px;text-align:center}
+.rest-emoji{font-size:48px;margin-bottom:10px}
+.rest-title{font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:900;color:#c77dff;margin-bottom:6px}
+.rest-text{font-size:13px;color:#9ca3af;line-height:1.6}
+.footer{text-align:center;color:#374151;font-size:11px;margin-top:16px;padding-bottom:8px}
+.calorie-box{background:linear-gradient(135deg,#c77dff20,#ff6b9d15);border:1px solid #c77dff40;border-radius:16px;padding:14px;margin-bottom:14px}
+.cal-title{font-weight:700;font-size:15px;color:#c77dff;margin-bottom:8px}
+.cal-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.cal-item{background:rgba(255,255,255,.05);border-radius:10px;padding:10px;text-align:center}
+.cal-val{font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:900;color:#f0ede8}
+.cal-label{font-size:10px;color:#9ca3af;margin-top:2px}
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="header">
+    <div class="header-label">Trainingsplan</div>
+    <h1>Abnehmen & Straffen</h1>
+    <div class="badges">
+      <span class="badge" style="color:#c77dff">🎯 Ziel: 76 → 60 kg</span>
+      <span class="badge" style="color:#ff6b9d">🏠 Zuhause + Laufband</span>
+      <span class="badge" style="color:#aaa">▶ YouTube-Anleitungen</span>
+    </div>
+  </div>
+
+  <div class="content">
+    <!-- PLAN TAB -->
+    <div class="tab active" id="tab-plan">
+      <div class="week-grid" id="day-pills"></div>
+      <div class="day-hdr" id="day-hdr"></div>
+      <div id="exercises"></div>
+      <div class="footer">5-Tage Plan · Anfänger · Zuhause</div>
+    </div>
+
+    <!-- ERNÄHRUNG TAB -->
+    <div class="tab" id="tab-ernaehrung">
+      <div class="section-title">🥗 Ernährung & Kalorien</div>
+      <div class="calorie-box">
+        <div class="cal-title">📊 Dein tägliches Ziel (76 kg → 60 kg)</div>
+        <div class="cal-grid">
+          <div class="cal-item"><div class="cal-val">1.400</div><div class="cal-label">Kalorien/Tag</div></div>
+          <div class="cal-item"><div class="cal-val">110g</div><div class="cal-label">Protein/Tag</div></div>
+          <div class="cal-item"><div class="cal-val">−500</div><div class="cal-label">Defizit kcal</div></div>
+          <div class="cal-item"><div class="cal-val">~0,5kg</div><div class="cal-label">Verlust/Woche</div></div>
+        </div>
+      </div>
+      <div id="nutrition-content"></div>
+      <div class="footer">Ernährung · 76 → 60 kg Ziel</div>
+    </div>
+
+    <!-- TIPPS TAB -->
+    <div class="tab" id="tab-tipps">
+      <div class="section-title">💡 Wichtige Tipps</div>
+      <div id="tips-content"></div>
+      <div class="footer">Du schaffst das! 💜</div>
+    </div>
+  </div>
+
+  <div class="bottom-nav">
+    <button class="nav-btn active" id="nav-plan" onclick="switchTab('plan')"><span class="nav-icon">📋</span>Plan</button>
+    <button class="nav-btn" id="nav-ernaehrung" onclick="switchTab('ernaehrung')"><span class="nav-icon">🥗</span>Ernährung</button>
+    <button class="nav-btn" id="nav-tipps" onclick="switchTab('tipps')"><span class="nav-icon">💡</span>Tipps</button>
+  </div>
+</div>
+
+<script>
+const DATA = {
+  days:[
+    {tag:"Mo",focus:"Bauch & Core",emoji:"🔥",color:"#c77dff",type:"training",
+     exercises:[
+      {name:"Laufband Warm-Up",detail:"Leichtes Gehen / Joggen",s:1,wdh:"10 Min",p:"—",tipp:"Tempo 5–6 km/h, locker einlaufen",yt:"https://www.youtube.com/watch?v=_kGESn8ArrU"},
+      {name:"Crunch",detail:"Bauch",s:3,wdh:"15–20",p:"45s",tipp:"Nur die Schultern heben, Lendenwirbel bleibt am Boden",yt:"https://www.youtube.com/watch?v=Xyd_fa5zoEU"},
+      {name:"Reverse Crunch",detail:"Unterer Bauch",s:3,wdh:"15",p:"45s",tipp:"Becken hebt sich, nicht die Beine schleudern",yt:"https://www.youtube.com/watch?v=hyv14e7jDGk"},
+      {name:"Plank",detail:"Core komplett",s:3,wdh:"30–45s",p:"45s",tipp:"Körper gerade, Bauch aktiv einziehen, atmen!",yt:"https://www.youtube.com/watch?v=ASdvN_XEl_c"},
+      {name:"Seitlicher Plank",detail:"Schräge Bauchmuskeln",s:2,wdh:"20s pro Seite",p:"30s",tipp:"Hüfte nicht absacken lassen",yt:"https://www.youtube.com/watch?v=K2eTatbFGBo"},
+      {name:"Fahrrad-Crunch",detail:"Schräge + Gerade",s:3,wdh:"20",p:"45s",tipp:"Langsam und kontrolliert, kein Schwung",yt:"https://www.youtube.com/watch?v=9FGilxCbdz8"},
+     ]},
+    {tag:"Di",focus:"Beine & Po",emoji:"🦵",color:"#ff6b9d",type:"training",
+     exercises:[
+      {name:"Laufband",detail:"Intervall: 1 Min schnell / 1 Min langsam",s:1,wdh:"15 Min",p:"—",tipp:"Schnell = 7–8 km/h, Langsam = 5 km/h",yt:"https://www.youtube.com/watch?v=_kGESn8ArrU"},
+      {name:"Kniebeugen",detail:"Körpergewicht",s:4,wdh:"15–20",p:"60s",tipp:"Rücken gerade, Knie über Zehen, Gewicht auf Fersen",yt:"https://www.youtube.com/watch?v=ultWZbUMPL8"},
+      {name:"Sumo-Kniebeugen",detail:"Breite Beine, Po-Fokus",s:3,wdh:"15",p:"60s",tipp:"Füße weit auseinander, Zehen nach außen",yt:"https://www.youtube.com/watch?v=qPDggFzJFKQ"},
+      {name:"Donkey Kicks",detail:"Po",s:3,wdh:"15 pro Seite",p:"45s",tipp:"Rücken gerade, Po oben anspannen",yt:"https://www.youtube.com/watch?v=SJ1Xuz9D-ZQ"},
+      {name:"Glute Bridge",detail:"Po & Hüfte",s:4,wdh:"20",p:"45s",tipp:"Oben kurz halten und Po fest anspannen",yt:"https://www.youtube.com/watch?v=OUgsJ8-Vi0E"},
+      {name:"Ausfallschritte",detail:"Alternierend",s:3,wdh:"12 pro Bein",p:"60s",tipp:"Knie nicht über die Zehen, Oberkörper aufrecht",yt:"https://www.youtube.com/watch?v=QOVaHwm-Q6U"},
+     ]},
+    {tag:"Mi",focus:"Aktive Erholung",emoji:"🧘",color:"#4cc9f0",type:"rest",
+     exercises:[]},
+    {tag:"Do",focus:"Rücken & Po",emoji:"💪",color:"#f4a261",type:"training",
+     exercises:[
+      {name:"Laufband Warm-Up",detail:"Leichtes Gehen",s:1,wdh:"8 Min",p:"—",tipp:"Tempo 5 km/h, Arme mitschwingen",yt:"https://www.youtube.com/watch?v=_kGESn8ArrU"},
+      {name:"Superman",detail:"Unterer Rücken",s:3,wdh:"15",p:"45s",tipp:"Langsam heben, 2 Sek oben halten",yt:"https://www.youtube.com/watch?v=cc6UVRS7PW4"},
+      {name:"Tischrudern",detail:"Oberer Rücken",s:3,wdh:"12–15",p:"60s",tipp:"Brust zum Tisch ziehen, Körper gerade",yt:"https://www.youtube.com/watch?v=rloXYB8M3vU"},
+      {name:"Vogel-Hund",detail:"Rücken & Balance",s:3,wdh:"12 pro Seite",p:"45s",tipp:"Gegenüberliegende Arm & Bein strecken, Core aktiv",yt:"https://www.youtube.com/watch?v=wiFNA3sqjCA"},
+      {name:"Glute Bridge einbeinig",detail:"Po & Rücken",s:3,wdh:"12 pro Seite",p:"45s",tipp:"Ein Bein gestreckt, Hüfte gerade halten",yt:"https://www.youtube.com/watch?v=OUgsJ8-Vi0E"},
+      {name:"Katze-Kuh Stretch",detail:"Wirbelsäule mobilisieren",s:2,wdh:"10",p:"30s",tipp:"Langsam und tief atmen, fließende Bewegung",yt:"https://www.youtube.com/watch?v=kqnua4rHVVA"},
+     ]},
+    {tag:"Fr",focus:"Beine & Bauch",emoji:"🔥",color:"#ff6b9d",type:"training",
+     exercises:[
+      {name:"Laufband",detail:"Konstantes Tempo",s:1,wdh:"20 Min",p:"—",tipp:"Tempo 6–7 km/h, Fettverbrennung pur!",yt:"https://www.youtube.com/watch?v=_kGESn8ArrU"},
+      {name:"Squat Pulse",detail:"Tiefe Kniebeuge halten",s:3,wdh:"20",p:"60s",tipp:"Unten bleiben und kleine Pulsbewegungen machen",yt:"https://www.youtube.com/watch?v=qPDggFzJFKQ"},
+      {name:"Hip Thrust",detail:"Po-Fokus",s:4,wdh:"15–20",p:"45s",tipp:"Schultern auf Couch/Sofa, Po weit heben",yt:"https://www.youtube.com/watch?v=xDmFkJxPzeM"},
+      {name:"Mountain Climbers",detail:"Bauch + Cardio",s:3,wdh:"30s",p:"45s",tipp:"Hüfte nicht hochziehen, schnelles Tempo",yt:"https://www.youtube.com/watch?v=nmwgirgXLYM"},
+      {name:"Leg Raises",detail:"Unterer Bauch",s:3,wdh:"15",p:"45s",tipp:"Beine gestreckt, Lendenwirbel bleibt am Boden",yt:"https://www.youtube.com/watch?v=JB2oyawG9KI"},
+      {name:"Burpees (leicht)",detail:"Ganzkörper Cardio",s:3,wdh:"8–10",p:"60s",tipp:"Ohne Sprung anfangen wenn nötig",yt:"https://www.youtube.com/watch?v=818DaYWJeEk"},
+     ]},
+  ],
+  nutrition:[
+    {icon:"🥚",title:"Frühstück (ca. 350 kcal)",items:["2 Eier + 1 Scheibe Vollkornbrot","Oder: Overnight Oats mit Beeren","Oder: Magerquark mit Früchten + Leinsamen"]},
+    {icon:"🥗",title:"Mittagessen (ca. 500 kcal)",items:["Hähnchen + Reis + Gemüse","Oder: Salat mit Thunfisch + Vollkornbrot","Oder: Linsensuppe mit Brot"]},
+    {icon:"🍎",title:"Snack (ca. 150 kcal)",items:["Apfel + 10 Mandeln","Oder: Magerquark pur","Oder: Gemüsesticks mit Hummus"]},
+    {icon:"🍽️",title:"Abendessen (ca. 400 kcal)",items:["Gemüsepfanne mit Tofu oder Hähnchen","Oder: Suppe + kleiner Salat","Oder: Rührei mit Gemüse"]},
+    {icon:"🚫",title:"Unbedingt vermeiden",items:["Softdrinks & Säfte (leere Kalorien!)","Weißbrot, Chips, Süßigkeiten täglich","Alkohol verlangsamt Fettverbrennung stark","Zu große Portionen abends"]},
+    {icon:"✅",title:"Gute Gewohnheiten",items:["Morgens ein großes Glas Wasser (500ml)","Langsam essen, gut kauen","Teller zur Hälfte mit Gemüse füllen","Nicht hungrig einkaufen gehen"]},
+  ],
+  tips:[
+    {icon:"🎯",title:"Realistisches Ziel",text:"16 kg in ca. 6–8 Monaten bei konsequentem Training + Ernährung. Pro Woche ca. 0,5 kg = gesund und nachhaltig!"},
+    {icon:"🏃‍♀️",title:"Laufband optimal nutzen",text:"3–4× pro Woche 20 Min bei 60–70% der max. Herzfrequenz = optimale Fettverbrennung. Formel: 220 minus Alter = max. Hz."},
+    {icon:"💧",title:"Wasser ist alles",text:"2,5–3 Liter täglich. Oft verwechseln wir Hunger mit Durst. Vor jeder Mahlzeit ein Glas Wasser trinken."},
+    {icon:"😴",title:"Schlaf & Hormone",text:"7–8 Stunden Schlaf. Schlafmangel erhöht das Hungerhormon Ghrelin — macht Abnehmen viel schwerer!"},
+    {icon:"📏",title:"Nicht nur auf die Waage",text:"Messen ist besser als wiegen! Bauch, Taille und Hüfte messen. Muskeln wiegen mehr als Fett — die Waage lügt manchmal."},
+    {icon:"🧘",title:"Mittwoch: Aktive Erholung",text:"Kein hartes Training! Stattdessen: 20 Min spazieren, dehnen oder Yoga. Der Körper braucht Erholung zum Verbrennen."},
+    {icon:"💜",title:"Motivation",text:"Fortschritt nicht Perfektion! Ein schlechter Tag macht nichts kaputt. Einfach am nächsten Tag weitermachen."},
+  ]
+};
+
+let state={day:0,sets:{},expanded:{}};
+function sk(d,e,s){return d+'-'+e+'-'+s}
+function save(){try{localStorage.setItem('tpf',JSON.stringify(state))}catch(e){}}
+function load(){try{const s=localStorage.getItem('tpf');if(s){const p=JSON.parse(s);state.day=p.day||0;state.sets=p.sets||{};}}catch(e){}}
+
+function prog(d){
+  const ex=DATA.days[d].exercises;if(!ex.length)return 0;
+  let t=0,dn=0;
+  ex.forEach((e,ei)=>{for(let s=0;s<e.s;s++){t++;if(state.sets[sk(d,ei,s)])dn++;}});
+  return t===0?0:Math.round(dn/t*100);
+}
+
+function setDay(d){state.day=d;state.expanded={};render();save();}
+function toggleSet(ei,si){const k=sk(state.day,ei,si);state.sets[k]=!state.sets[k];render();save();}
+function toggleEx(id){state.expanded[id]=!state.expanded[id];render();}
+
+function render(){
+  const d=DATA.days[state.day];const c=d.color;const p=prog(state.day);
+
+  // pills
+  document.getElementById('day-pills').innerHTML=DATA.days.map((day,i)=>{
+    const pr=prog(i);const a=i===state.day;
+    return`<div class="day-pill" onclick="setDay(${i})" style="border-color:${a?day.color:'rgba(255,255,255,.08)'};background:${a?day.color+'20':'#141416'}">
+      <div class="pill-emoji">${day.emoji}</div>
+      <div class="pill-tag" style="color:${a?day.color:'#9ca3af'}">${day.tag}</div>
+      <div class="pill-focus">${day.focus}</div>
+      ${pr>0?`<div class="pill-bar"><div class="pill-fill" style="width:${pr}%;background:${day.color}"></div></div>`:''}
+    </div>`;
+  }).join('');
+
+  // day header
+  const hdr=document.getElementById('day-hdr');
+  hdr.style.cssText=`border-radius:16px;padding:14px 16px;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center;background:${c}15;border:1px solid ${c}35`;
+  hdr.innerHTML=`<div><div style="font-size:22px">${d.emoji}</div>
+    <div style="font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:900;color:${c}">${d.tag} — ${d.focus}</div>
+    <div style="font-size:12px;color:#9ca3af">${d.type==='rest'?'Erholungstag':'Trainingstag'}</div></div>
+    <div style="text-align:right"><div class="dh-pct" style="color:${c}">${p}%</div><div style="font-size:10px;color:#6b7280">fertig</div></div>`;
+
+  // exercises
+  const exDiv=document.getElementById('exercises');
+  if(d.type==='rest'){
+    exDiv.innerHTML=`<div class="rest-card">
+      <div class="rest-emoji">🧘‍♀️</div>
+      <div class="rest-title">Aktiver Erholungstag</div>
+      <div class="rest-text">Heute kein hartes Training!<br><br>
+        ✅ 20–30 Min spazieren gehen<br>
+        ✅ Stretching / Dehnen (10 Min)<br>
+        ✅ Viel Wasser trinken<br>
+        ✅ Früh schlafen gehen<br><br>
+        <em style="color:#c77dff">Erholung ist genauso wichtig wie Training. Der Körper verbrennt Fett auch in Ruhe!</em>
+      </div>
+    </div>`;
+    return;
+  }
+  exDiv.innerHTML=d.exercises.map((ex,ei)=>{
+    const expKey=state.day+'-'+ei;const open=!!state.expanded[expKey];
+    const sets=Array.from({length:ex.s},(_,si)=>{
+      const done=state.sets[sk(state.day,ei,si)];
+      return`<button class="set-btn" onclick="toggleSet(${ei},${si})" style="${done?`background:${c};border-color:${c};color:#fff`:''}">${done?'✓':si+1}</button>`;
+    }).join('');
+    return`<div class="ex-card">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;cursor:pointer" onclick="toggleEx('${expKey}')">
+        <div><div class="ex-name">${ex.name}</div><div class="ex-detail">${ex.detail}</div></div>
+        <div class="expand-arrow" style="transform:${open?'rotate(180deg)':'rotate(0)'}">▼</div>
+      </div>
+      <div class="ex-tags">
+        <span class="ex-tag" style="background:${c}25;color:${c}">${ex.s} ${ex.s===1?'Einheit':'Sätze'}</span>
+        <span class="ex-tag" style="background:rgba(255,255,255,.08);color:#9ca3af;font-weight:400">${ex.wdh}</span>
+        ${ex.p!=='—'?`<span class="ex-tag" style="background:rgba(255,255,255,.08);color:#9ca3af;font-weight:400">⏱ ${ex.p}</span>`:''}
+      </div>
+      <div class="set-row">${sets}</div>
+      <div class="ex-body ${open?'open':''}">
+        <div class="ex-tip" style="border-left-color:${c}80">💡 ${ex.tipp}</div>
+        <a class="yt-btn" href="${ex.yt}" target="_blank"><span style="font-size:20px">▶</span> Anleitung auf YouTube ansehen</a>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderNutrition(){
+  document.getElementById('nutrition-content').innerHTML=DATA.nutrition.map(n=>`
+    <div class="tip-card" style="flex-direction:column;gap:8px">
+      <div style="display:flex;align-items:center;gap:10px">
+        <div class="tip-icon">${n.icon}</div>
+        <div class="tip-title">${n.title}</div>
+      </div>
+      <div style="padding-left:4px">${n.items.map(item=>`<div style="font-size:13px;color:#9ca3af;padding:3px 0;border-bottom:1px solid rgba(255,255,255,.05)">• ${item}</div>`).join('')}</div>
+    </div>`).join('');
+}
+
+function renderTips(){
+  document.getElementById('tips-content').innerHTML=DATA.tips.map(t=>`
+    <div class="tip-card">
+      <div class="tip-icon">${t.icon}</div>
+      <div><div class="tip-title">${t.title}</div><div class="tip-text">${t.text}</div></div>
+    </div>`).join('');
+}
+
+function switchTab(name){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('tab-'+name).classList.add('active');
+  document.getElementById('nav-'+name).classList.add('active');
+  document.querySelector('.content').scrollTop=0;
+}
+
+load();
+renderNutrition();
+renderTips();
+render();
+</script>
+</body>
+</html>
