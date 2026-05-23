@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#0a0a0c">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Ernährungsplan">
+<title>Ernährungsplan</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;900&family=Barlow:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;background:#0a0a0c;color:#f0ede8;font-family:'Barlow',sans-serif;overflow:hidden}
+#app{display:flex;flex-direction:column;height:100dvh;height:100vh}
+.header{padding:48px 16px 12px;flex-shrink:0;border-bottom:1px solid rgba(255,255,255,.07)}
+.header-label{font-size:10px;letter-spacing:.3em;text-transform:uppercase;font-weight:700;font-family:'Barlow Condensed',sans-serif}
+.header h1{font-family:'Barlow Condensed',sans-serif;font-size:26px;font-weight:900;letter-spacing:-.02em;line-height:1;margin:3px 0 7px}
+.badges{display:flex;gap:6px;flex-wrap:wrap}
+.badge{background:rgba(255,255,255,.08);border-radius:20px;padding:3px 9px;font-size:10px}
+.person-toggle{display:flex;background:rgba(0,0,0,.3);border-radius:14px;padding:4px;margin-top:10px;border:1px solid rgba(255,255,255,.1)}
+.person-btn{flex:1;padding:8px;border-radius:11px;border:none;cursor:pointer;font-weight:700;font-size:13px;font-family:'Barlow',sans-serif;transition:all .25s}
+.content{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.tab{display:none;padding:14px}
+.tab.active{display:block}
+.bottom-nav{display:flex;background:#111113;border-top:1px solid rgba(255,255,255,.07);flex-shrink:0;padding-bottom:calc(env(safe-area-inset-bottom,0px) + 8px)}
+.nav-btn{flex:1;padding:10px 4px 7px;background:none;border:none;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;color:#6b7280;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;border-top:2px solid transparent;transition:all .2s;font-family:'Barlow',sans-serif}
+.nav-icon{font-size:20px}
+.shift-toggle{display:flex;background:#141416;border-radius:14px;padding:4px;margin-bottom:14px;border:1px solid rgba(255,255,255,.08)}
+.shift-btn{flex:1;padding:9px;border-radius:11px;border:none;cursor:pointer;font-weight:700;font-size:13px;font-family:'Barlow',sans-serif;transition:all .25s;background:transparent;color:#6b7280}
+.stats-box{border-radius:16px;padding:14px;margin-bottom:14px}
+.stats-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:10px}
+.stat-item{background:rgba(255,255,255,.06);border-radius:12px;padding:10px;text-align:center}
+.stat-val{font-family:'Barlow Condensed',sans-serif;font-size:24px;font-weight:900;line-height:1}
+.stat-label{font-size:10px;color:#9ca3af;margin-top:3px}
+.stat-sub{font-size:9px;color:#6b7280}
+.meal-card{background:#141416;border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:14px;margin-bottom:10px}
+.meal-header{display:flex;justify-content:space-between;align-items:center;cursor:pointer}
+.meal-time-badge{font-size:11px;font-weight:700;padding:3px 8px;border-radius:20px;display:inline-block;margin-bottom:4px}
+.meal-name{font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:700}
+.meal-sub{font-size:11px;color:#9ca3af;margin-top:2px}
+.meal-body{display:none;margin-top:12px}
+.meal-body.open{display:block}
+.option{background:rgba(255,255,255,.04);border-radius:10px;padding:10px 12px;margin-bottom:8px;border-left:3px solid}
+.option-title{font-weight:700;font-size:13px;margin-bottom:5px}
+.option-item{font-size:12px;color:#9ca3af;padding:2px 0;line-height:1.4}
+.macro-row{display:flex;gap:5px;margin-top:8px;flex-wrap:wrap}
+.macro{padding:3px 8px;border-radius:20px;font-size:10px;font-weight:700;background:rgba(255,255,255,.07);color:#9ca3af}
+.prep-box{border-radius:12px;padding:12px;margin-bottom:10px;border:1px solid}
+.prep-title{font-weight:700;font-size:14px;margin-bottom:6px}
+.prep-item{font-size:12px;color:#9ca3af;padding:3px 0;line-height:1.4}
+.tip-card{background:#141416;border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:14px;margin-bottom:10px;display:flex;gap:12px}
+.tip-icon{font-size:24px;flex-shrink:0}
+.tip-title{font-weight:700;font-size:14px;margin-bottom:4px}
+.tip-text{font-size:12px;color:#9ca3af;line-height:1.5}
+.section-title{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:18px;margin-bottom:4px}
+.section-sub{font-size:12px;color:#9ca3af;margin-bottom:14px;line-height:1.5}
+.footer{text-align:center;color:#374151;font-size:11px;margin-top:16px;padding-bottom:8px}
+.expand-arrow{color:#6b7280;font-size:14px;flex-shrink:0;transition:transform .2s}
+.alert-box{border-radius:14px;padding:12px 14px;margin-bottom:14px;font-size:12px;line-height:1.6}
+.alert-title{font-weight:700;font-size:14px;margin-bottom:4px}
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="header" id="main-header">
+    <div class="header-label" id="header-label">Ernährungsplan</div>
+    <h1 id="header-title">Schichtdienst</h1>
+    <div class="badges" id="header-badges"></div>
+    <div class="person-toggle">
+      <button class="person-btn" id="btn-mann" onclick="setPerson('mann')">👨 Mein Plan</button>
+      <button class="person-btn" id="btn-frau" onclick="setPerson('frau')">👩 Frau</button>
+    </div>
+  </div>
+
+  <div class="content">
+    <div class="tab active" id="tab-meals">
+      <div class="shift-toggle" id="shift-div">
+        <button class="shift-btn" id="btn-tag" onclick="setShift('tag')">☀️ Tagdienst 07–19:30</button>
+        <button class="shift-btn" id="btn-nacht" onclick="setShift('nacht')">🌙 Nachtschicht 19–07:30</button>
+      </div>
+      <div class="stats-box" id="stats-box"></div>
+      <div id="alert-box"></div>
+      <div class="section-title" id="meals-title"></div>
+      <div class="section-sub" id="meals-sub"></div>
+      <div id="meals-content"></div>
+      <div class="footer" id="meals-footer"></div>
+    </div>
+
+    <div class="tab" id="tab-prep">
+      <div class="section-title" id="prep-title"></div>
+      <div class="section-sub">Was du vorbereiten solltest um Zeit zu sparen</div>
+      <div id="prep-content"></div>
+      <div class="footer">Vorbereitung ist der halbe Erfolg! 💪</div>
+    </div>
+
+    <div class="tab" id="tab-tips">
+      <div class="section-title">Tipps für Schichtdienst</div>
+      <div class="section-sub">Speziell für 12,5h Schichten mit nur 30 Min Pause</div>
+      <div id="tips-content"></div>
+      <div class="footer" id="tips-footer"></div>
+    </div>
+  </div>
+
+  <div class="bottom-nav">
+    <button class="nav-btn active" id="nav-meals" onclick="switchTab('meals')"><span class="nav-icon">🍽️</span>Mahlzeiten</button>
+    <button class="nav-btn" id="nav-prep" onclick="switchTab('prep')"><span class="nav-icon">🥡</span>Meal Prep</button>
+    <button class="nav-btn" id="nav-tips" onclick="switchTab('tips')"><span class="nav-icon">💡</span>Tipps</button>
+  </div>
+</div>
+
+<script>
+const PLANS = {
+  mann: {
+    color:"#e63946", gradient:"linear-gradient(160deg,#1a1a2e,#0f3460)",
+    label:"Dein Plan", title:"Muskelaufbau · Schichtdienst",
+    badges:["💪 96→85 kg","🥩 175g Protein/Tag","⏰ 12,5h Schicht"],
+    stats:[
+      {val:"2.500",label:"Kalorien/Tag",sub:"leichtes Defizit"},
+      {val:"175g",label:"Protein/Tag",sub:"1,8g pro kg"},
+      {val:"3",label:"Mahlzeiten",sub:"realistisch für Schicht"},
+      {val:"~0,5kg",label:"Verlust/Woche",sub:"bei Konsequenz"},
+    ],
+    tag:{
+      alert:{text:"☀️ Tagdienst 07:00–19:30 · Nur 30 Min Pause · Training nach der Schicht oder freiem Tag",color:"#e63946"},
+      meals:[
+        {
+          time:"06:15 — Vor der Schicht",name:"Frühstück (Groß & sättigend)",sub:"Wichtigste Mahlzeit des Tages!",timeColor:"#f4a261",
+          options:[
+            {title:"Option A — Haferflocken Power Bowl",items:["100g Haferflocken mit Milch","3 Eier (hart gekocht oder Rührei)","1 Banane","30g Whey Protein (in Shake)","Handvoll Beeren"],macros:["65g Protein","90g Kohlenhydrate","18g Fett","~780 kcal"]},
+            {title:"Option B — Rührei Deluxe",items:["5 Eier Rührei mit Paprika & Spinat","3 Scheiben Vollkornbrot mit Butter","200g Magerquark","1 Glas Milch"],macros:["70g Protein","65g Kohlenhydrate","28g Fett","~790 kcal"]},
+            {title:"Option C — Schnell & einfach",items:["200g Magerquark","60g Haferflocken","2 EL Erdnussbutter","1 Banane","30g Protein Shake"],macros:["68g Protein","80g Kohlenhydrate","18g Fett","~760 kcal"]},
+          ]
+        },
+        {
+          time:"13:00 — 30 Min Pause",name:"Mittagessen (Schnell & hochwertig)",sub:"Muss fix gehen — vorher vorbereiten!",timeColor:"#e63946",
+          options:[
+            {title:"Option A — Meal Prep Tupperware",items:["200g vorgekochtes Hähnchen","150g Reis (vorgekocht)","Gemüse (Brokkoli, Paprika)","1 EL Olivenöl — alles kalt oder kurz warm"],macros:["52g Protein","60g Kohlenhydrate","12g Fett","~560 kcal"]},
+            {title:"Option B — Brot & Protein",items:["4 Scheiben Vollkornbrot","200g Thunfisch aus der Dose","Gurke, Tomate, Paprika","1 Handvoll Nüsse"],macros:["55g Protein","55g Kohlenhydrate","16g Fett","~580 kcal"]},
+            {title:"Option C — Quark & Brot",items:["300g Magerquark","3 Scheiben Vollkornbrot mit Aufschnitt","2 Hart gekochte Eier (vorher kochen!)","Gemüsesticks"],macros:["60g Protein","50g Kohlenhydrate","14g Fett","~570 kcal"]},
+          ]
+        },
+        {
+          time:"20:00 — Nach der Schicht",name:"Abendessen + Post-Workout",sub:"Falls Training: direkt danach essen",timeColor:"#2a9d8f",
+          options:[
+            {title:"Option A — Steak & Gemüse",items:["250g Rindersteak oder Hähnchen","400g Gemüse gedünstet","2 EL Olivenöl","Salat dazu"],macros:["58g Protein","18g Kohlenhydrate","24g Fett","~520 kcal"]},
+            {title:"Option B — Hähnchen & Reis",items:["250g Hähnchenbrust","150g Reis","Brokkoli & Paprika","Sojasoße & Gewürze"],macros:["60g Protein","55g Kohlenhydrate","10g Fett","~550 kcal"]},
+            {title:"Option C — Lachs & Kartoffeln",items:["220g Lachsfilet","200g Kartoffeln","Großer Salat","Zitronendressing"],macros:["52g Protein","38g Kohlenhydrate","22g Fett","~540 kcal"]},
+          ]
+        },
+        {
+          time:"22:00 — Vor dem Schlafen",name:"Protein-Snack (optional)",sub:"Verhindert Muskelabbau im Schlaf",timeColor:"#6b7280",
+          options:[
+            {title:"Einfach & effektiv",items:["300g Magerquark (langsames Protein)","ODER: 250g Hüttenkäse","ODER: 30g Casein Protein Shake"],macros:["28–35g Protein","8g Kohlenhydrate","2g Fett","~160 kcal"]},
+          ]
+        },
+      ]
+    },
+    nacht:{
+      alert:{text:"🌙 Nachtschicht 19:00–07:30 · Körper im Ruhemodus · Leichter essen nachts!",color:"#4cc9f0"},
+      meals:[
+        {
+          time:"17:30 — Vor der Nachtschicht",name:"Hauptmahlzeit (Groß & sättigend)",sub:"Wichtigste Mahlzeit — gibt Energie für die Nacht",timeColor:"#f4a261",
+          options:[
+            {title:"Option A — Hähnchen & Reis",items:["250g Hähnchenbrust (gegrillt)","200g Reis","300g Gemüse","1 EL Olivenöl","30g Protein Shake"],macros:["72g Protein","80g Kohlenhydrate","14g Fett","~740 kcal"]},
+            {title:"Option B — Pasta & Hackfleisch",items:["180g Vollkornnudeln (gekocht)","180g Rinderhack (mager)","Tomatensauce","Parmesan","Salat"],macros:["58g Protein","82g Kohlenhydrate","18g Fett","~730 kcal"]},
+            {title:"Option C — Steak & Kartoffeln",items:["250g Rindersteak","200g Kartoffeln","Gemüse & Salat","2 EL Olivenöl"],macros:["60g Protein","42g Kohlenhydrate","24g Fett","~620 kcal"]},
+          ]
+        },
+        {
+          time:"01:00 — 30 Min Pause",name:"Nacht-Mahlzeit (Leicht & proteinreich)",sub:"Kein schweres Essen! Magen & Körper schlafen halb.",timeColor:"#4cc9f0",
+          options:[
+            {title:"Option A — Tupperware (vorbereitet)",items:["200g Hähnchen kalt","Gemüsesticks (Gurke, Karotte, Paprika)","2 Hart gekochte Eier","1 Scheibe Vollkornbrot"],macros:["55g Protein","20g Kohlenhydrate","14g Fett","~420 kcal"]},
+            {title:"Option B — Quark & Brot",items:["300g Magerquark","2 Scheiben Vollkornbrot","Gurke & Tomaten","10g Nüsse"],macros:["52g Protein","38g Kohlenhydrate","12g Fett","~440 kcal"]},
+            {title:"Option C — Protein Shake + Snack",items:["40g Whey Protein Shake","2 Reiswaffeln mit Erdnussbutter","1 Apfel","Wasser"],macros:["45g Protein","45g Kohlenhydrate","10g Fett","~440 kcal"]},
+          ]
+        },
+        {
+          time:"08:00 — Nach der Schicht",name:"Kleines Frühstück vor dem Schlafen",sub:"Leicht essen — du schläfst danach!",timeColor:"#c77dff",
+          options:[
+            {title:"Klein aber Protein-reich",items:["200g Magerquark mit Beeren","ODER: 3 Eier Rührei + 1 Toast","ODER: 30g Protein Shake + Banane","Dann schlafen gehen!"],macros:["25–35g Protein","20–30g Kohlenhydrate","5–12g Fett","~250–350 kcal"]},
+          ]
+        },
+        {
+          time:"15:00 — Aufwachen (Mittagessen)",name:"Aufwach-Mahlzeit",sub:"Dein 'Frühstück' nach der Nachtschicht",timeColor:"#2a9d8f",
+          options:[
+            {title:"Option A — Haferflocken Bowl",items:["100g Haferflocken","3 Eier","1 Banane","30g Protein","Beeren"],macros:["68g Protein","85g Kohlenhydrate","18g Fett","~770 kcal"]},
+            {title:"Option B — Großes Rührei",items:["4–5 Eier","Spinat, Paprika, Zwiebeln","2–3 Scheiben Vollkornbrot","200g Magerquark"],macros:["65g Protein","60g Kohlenhydrate","26g Fett","~740 kcal"]},
+          ]
+        },
+      ]
+    },
+    prep:{
+      tag:[
+        {title:"☀️ Tagdienst Vorbereitung (Abend vorher)",color:"#e63946",items:["✅ Hähnchen oder Fleisch grillen/kochen (200–250g)","✅ Reis oder Kartoffeln kochen","✅ Gemüse schneiden und in Tupperware","✅ Eier hart kochen (3–5 Stück)","✅ Protein Shake Pulver abmessen","✅ Brot & Aufschnitt bereitstellen","⏱️ Zeitaufwand: ca. 30 Min am Abend"]},
+        {title:"🎒 Was du mitnimmst",color:"#2a9d8f",items:["📦 Tupperware mit Mittagessen","🥚 2–3 Hart gekochte Eier","🍫 Protein Shake in Shaker","💧 Große Wasserflasche (1,5L)","🍎 1 Apfel oder Banane als Notfall-Snack"]},
+      ],
+      nacht:[
+        {title:"🌙 Nachtschicht Vorbereitung (Nachmittag)",color:"#4cc9f0",items:["✅ Hauptmahlzeit frisch kochen (17:30 essen)","✅ Nacht-Tupperware vorbereiten (Hähnchen kalt, Gemüse)","✅ Eier hart kochen","✅ Protein Shake bereitstellen","✅ Viel Wasser einpacken","⏱️ Zeitaufwand: ca. 20 Min"]},
+        {title:"🎒 Was du mitnimmst",color:"#c77dff",items:["📦 Tupperware Nacht-Mahlzeit","💧 2L Wasser (nachts austrocknet man mehr)","☕ Kaffee in Thermoskanne (max. 2 Tassen!)","🍎 1 Apfel als Snack","🥤 Protein Shake für die Pause"]},
+      ]
+    },
+    tips:[
+      {icon:"📦",title:"Meal Prep ist Pflicht",text:"Mit nur 30 Min Pause bleibt keine Zeit zum Kochen. Abends vorher 20–30 Min vorbereiten rettet den Plan!"},
+      {icon:"💧",title:"Wasser in der Schicht",text:"1,5–2L Wasser während der Schicht trinken. Dehydration macht müde und erhöht den Hunger."},
+      {icon:"☕",title:"Kaffee mit Maß",text:"Max. 2 Tassen pro Schicht. Zu viel Koffein stört den Schlaf danach — auch wenn es sich nicht so anfühlt."},
+      {icon:"🌙",title:"Nachtschicht & Essen",text:"Nachts weniger und leichter essen. Der Verdauungstrakt schläft auch halb mit. Kein schweres Fleisch oder Fett um 2 Uhr nachts!"},
+      {icon:"😴",title:"Schlaf nach Nachtschicht",text:"Sofort nach Hause, kurz essen, dann schlafen. Verdunklungsvorhänge und Handy auf lautlos. Schlaf = Muskelaufbau!"},
+      {icon:"🥩",title:"Protein trotzdem erreichen",text:"Mit 3 Mahlzeiten á 55–65g Protein kommst du auf 165–195g täglich. Das reicht für Muskelaufbau!"},
+      {icon:"🎯",title:"Training einplanen",text:"Am besten an freien Tagen oder nach dem Tagdienst (kurze Session). Nach Nachtschicht: erst schlafen, dann trainieren!"},
+      {icon:"⚖️",title:"Nicht stressen",text:"Schichtdienst macht perfekte Ernährung schwer. 80% Konsequenz reicht für gute Ergebnisse. Kein Stress!"},
+    ],
+    tipFooter:"Schichtdienst-Held! Du schaffst das 💪"
+  },
+  frau: {
+    color:"#c77dff", gradient:"linear-gradient(160deg,#1a0a2e,#3d0f5a)",
+    label:"Plan deiner Frau", title:"Abnehmen · Zuhause",
+    badges:["💜 76→60 kg","🥗 1.400 kcal/Tag","🏠 Zuhause"],
+    stats:[
+      {val:"1.400",label:"Kalorien/Tag",sub:"moderates Defizit"},
+      {val:"110g",label:"Protein/Tag",sub:"1,5g pro kg"},
+      {val:"−500",label:"Defizit kcal",sub:"effektiv & gesund"},
+      {val:"~0,5kg",label:"Verlust/Woche",sub:"nachhaltig"},
+    ],
+    tag:{
+      alert:{text:"🏠 Zuhause · Flexibler Zeitplan · 5 Mahlzeiten täglich",color:"#c77dff"},
+      meals:[
+        {
+          time:"07:30 — Frühstück",name:"Frühstück (Leicht & sättigend)",sub:"Gut starten ohne zu viel zu essen",timeColor:"#c77dff",
+          options:[
+            {title:"Option A — Overnight Oats",items:["50g Haferflocken mit 150ml Milch","100g Beeren","1 TL Honig","1 EL Chiasamen"],macros:["12g Protein","52g Kohlenhydrate","8g Fett","~320 kcal"]},
+            {title:"Option B — Quark & Früchte",items:["200g Magerquark","1 Banane oder Apfel","1 EL Leinsamen","Zimt"],macros:["24g Protein","35g Kohlenhydrate","2g Fett","~250 kcal"]},
+            {title:"Option C — Rührei",items:["2 Eier Rührei","Paprika, Spinat","1 Scheibe Vollkornbrot"],macros:["20g Protein","22g Kohlenhydrate","14g Fett","~290 kcal"]},
+          ]
+        },
+        {
+          time:"13:00 — Mittagessen",name:"Mittagessen (Größte Mahlzeit)",sub:"Mittags am meisten essen — gibt Energie",timeColor:"#2a9d8f",
+          options:[
+            {title:"Option A — Hähnchen & Gemüse",items:["150g Hähnchenbrust","300g Gemüse","100g Reis oder Süßkartoffel","1 TL Olivenöl"],macros:["38g Protein","45g Kohlenhydrate","8g Fett","~400 kcal"]},
+            {title:"Option B — Thunfisch Salat",items:["1 Dose Thunfisch","Großer Salat","Kidneybohnen","Olivenöl & Essig","1 Scheibe Brot"],macros:["35g Protein","30g Kohlenhydrate","10g Fett","~350 kcal"]},
+            {title:"Option C — Gemüsesuppe",items:["Große selbstgekochte Gemüsesuppe","2 Scheiben Vollkornbrot","100g Magerquark als Dip"],macros:["20g Protein","50g Kohlenhydrate","6g Fett","~330 kcal"]},
+          ]
+        },
+        {
+          time:"16:00 — Snack",name:"Nachmittags-Snack",sub:"Vor oder nach dem Training",timeColor:"#ff6b9d",
+          options:[
+            {title:"Klein aber sättigend",items:["150g Magerquark + Beeren","ODER: 1 Apfel + 10 Mandeln","ODER: Gemüsesticks + Hummus","ODER: 1 Reiswaffel + Erdnussbutter"],macros:["10–15g Protein","15–25g Kohlenhydrate","3–8g Fett","~130 kcal"]},
+          ]
+        },
+        {
+          time:"19:00 — Abendessen",name:"Abendessen (Leicht & proteinreich)",sub:"Abends wenig Carbs — mehr Protein & Gemüse",timeColor:"#4cc9f0",
+          options:[
+            {title:"Option A — Lachs & Gemüse",items:["150g Lachs","400g Gemüse gedünstet","Salat mit Zitronendressing","Frische Kräuter"],macros:["36g Protein","14g Kohlenhydrate","16g Fett","~340 kcal"]},
+            {title:"Option B — Hähnchen Pfanne",items:["150g Hähnchen","Zucchini, Paprika, Zwiebeln","1 EL Olivenöl","Gewürze & Kräuter"],macros:["32g Protein","15g Kohlenhydrate","12g Fett","~295 kcal"]},
+            {title:"Option C — Rührei & Salat",items:["3 Eier Rührei","Spinat & Tomaten","Großer Salat","Balsamico Dressing"],macros:["25g Protein","12g Kohlenhydrate","16g Fett","~285 kcal"]},
+          ]
+        },
+      ]
+    },
+    nacht:{
+      alert:{text:"🏠 Zuhause · Flexibler Plan · Gleicher Plan wie Tagdienst",color:"#c77dff"},
+      meals:[
+        {
+          time:"07:30",name:"Frühstück",sub:"",timeColor:"#c77dff",
+          options:[{title:"Gleicher Plan wie Tagdienst",items:["Overnight Oats, Quark oder Rührei","Leicht & sättigend starten"],macros:["~12–24g Protein","~22–52g KH","~320 kcal"]}]
+        },
+        {
+          time:"13:00",name:"Mittagessen",sub:"",timeColor:"#2a9d8f",
+          options:[{title:"Hauptmahlzeit des Tages",items:["Hähnchen + Gemüse + Reis","oder Thunfisch Salat","oder Gemüsesuppe"],macros:["~35–38g Protein","~30–50g KH","~350–400 kcal"]}]
+        },
+        {
+          time:"16:00",name:"Snack",sub:"",timeColor:"#ff6b9d",
+          options:[{title:"Kleiner Snack",items:["Quark + Beeren","oder Apfel + Mandeln"],macros:["~10–15g Protein","~130 kcal"]}]
+        },
+        {
+          time:"19:00",name:"Abendessen",sub:"",timeColor:"#4cc9f0",
+          options:[{title:"Leichtes Abendessen",items:["Lachs + Gemüse","oder Hähnchen Pfanne","oder Rührei + Salat"],macros:["~25–36g Protein","~285–340 kcal"]}]
+        },
+      ]
+    },
+    prep:{
+      tag:[
+        {title:"🥡 Wöchentliche Vorbereitung (Sonntag)",color:"#c77dff",items:["✅ Hähnchen vorkochen (für 3–4 Tage)","✅ Gemüse waschen & schneiden","✅ Overnight Oats für Mo & Di vorbereiten","✅ Eier hart kochen","✅ Gemüsesticks in Portionen aufteilen","⏱️ Zeitaufwand: ca. 45 Min Sonntag"]},
+        {title:"💡 Einfache Regeln",color:"#2a9d8f",items:["🥗 Teller: ½ Gemüse, ¼ Protein, ¼ Carbs","💧 Vor jeder Mahlzeit 1 Glas Wasser","🐌 Langsam essen — 20 Min bis zur Sättigung","🚫 Keine Softdrinks oder Säfte"]},
+      ],
+      nacht:[
+        {title:"🥡 Gleiche Vorbereitung",color:"#c77dff",items:["Sonntags meal preppen wie beim Tagplan","Overnight Oats vorbereiten","Gemüse schneiden","Hähnchen vorkochen"]},
+      ]
+    },
+    tips:[
+      {icon:"💧",title:"Wasser vor dem Essen",text:"Immer ein großes Glas Wasser vor jeder Mahlzeit. Reduziert den Hunger und hilft beim Abnehmen."},
+      {icon:"🥗",title:"Teller-Methode",text:"Hälfte Gemüse, Viertel Protein, Viertel Kohlenhydrate. Einfache Regel für jede Mahlzeit!"},
+      {icon:"🐌",title:"Langsam essen",text:"20 Minuten braucht der Körper um Sättigung zu melden. Langsam kauen = weniger essen unbewusst."},
+      {icon:"🍳",title:"Sonntag Meal Prep",text:"45 Min Vorbereitung am Sonntag spart täglich Zeit und verhindert schlechte spontane Entscheidungen."},
+      {icon:"📏",title:"Maßband statt Waage",text:"Bauch, Taille und Hüfte messen ist besser. Muskeln wiegen mehr als Fett — die Waage lügt!"},
+      {icon:"😴",title:"Schlaf ist wichtig",text:"7–8 Stunden Schlaf. Schlafmangel erhöht das Hungerhormon Ghrelin — macht Abnehmen viel schwerer."},
+      {icon:"🚫",title:"Diese Dinge meiden",text:"Softdrinks, Fruchtsäfte, Alkohol, Weißbrot täglich. Das sind die größten versteckten Kalorienfallen!"},
+      {icon:"💜",title:"Keine Crash-Diät",text:"500 kcal Defizit ist perfekt. Mehr führt zu Jo-Jo Effekt. Langsam und nachhaltig ist der Gewinner!"},
+    ],
+    tipFooter:"Du schaffst das — Schritt für Schritt! 💜"
+  }
+};
+
+let activePerson='mann', activeShift='tag', expandedMeals={};
+
+function getColor(){return PLANS[activePerson].color}
+
+function setPerson(p){
+  activePerson=p; expandedMeals={};
+  const plan=PLANS[p];
+  document.getElementById('main-header').style.background=plan.gradient;
+  document.getElementById('header-label').style.color=plan.color;
+  document.getElementById('header-label').textContent=plan.label;
+  document.getElementById('header-title').textContent=plan.title;
+  document.getElementById('header-badges').innerHTML=plan.badges.map(b=>`<span class="badge">${b}</span>`).join('');
+  document.getElementById('btn-mann').style.cssText=p==='mann'?`background:${PLANS.mann.color};color:#fff`:'background:transparent;color:#6b7280';
+  document.getElementById('btn-frau').style.cssText=p==='frau'?`background:${PLANS.frau.color};color:#fff`:'background:transparent;color:#6b7280';
+  document.querySelectorAll('.nav-btn.active').forEach(b=>b.style.borderTopColor=plan.color);
+  renderAll();
+  document.getElementById('shift-div').style.display=p==='mann'?'flex':'none';
+}
+
+function setShift(s){if(activePerson==='frau')return;
+  activeShift=s; expandedMeals={};
+  const c=getColor();
+  document.getElementById('btn-tag').style.cssText=s==='tag'?`background:${c};color:#fff`:'background:transparent;color:#6b7280';
+  document.getElementById('btn-nacht').style.cssText=s==='nacht'?`background:${c};color:#fff`:'background:transparent;color:#6b7280';
+  renderMeals(); renderPrep();
+}
+
+function toggleMeal(i){expandedMeals[i]=!expandedMeals[i];renderMeals();}
+
+function renderMeals(){
+  const plan=PLANS[activePerson]; const c=plan.color;
+  const shiftData=plan[activeShift]||plan.tag;
+  
+  document.getElementById('stats-box').style.cssText=`border-radius:16px;padding:14px;margin-bottom:14px;background:${c}15;border:1px solid ${c}35`;
+  document.getElementById('stats-box').innerHTML=`<div style="font-weight:700;font-size:14px;color:${c};margin-bottom:10px">📊 Deine täglichen Ziele</div>
+    <div class="stats-grid">${plan.stats.map(s=>`<div class="stat-item"><div class="stat-val" style="color:${c}">${s.val}</div><div class="stat-label">${s.label}</div><div class="stat-sub">${s.sub}</div></div>`).join('')}</div>`;
+
+  const alert=shiftData.alert;
+  document.getElementById('alert-box').innerHTML=`<div class="alert-box" style="background:${alert.color}18;border:1px solid ${alert.color}40;color:${alert.color}">${alert.text}</div>`;
+
+  document.getElementById('meals-title').textContent='🍽️ Dein Tagesplan';
+  document.getElementById('meals-title').style.color=c;
+  document.getElementById('meals-sub').textContent='Tippe auf eine Mahlzeit für Details & Optionen';
+
+  document.getElementById('meals-content').innerHTML=shiftData.meals.map((meal,mi)=>{
+    const open=!!expandedMeals[mi];
+    return`<div class="meal-card">
+      <div class="meal-header" onclick="toggleMeal(${mi})">
+        <div style="flex:1">
+          <span class="meal-time-badge" style="background:${meal.timeColor}25;color:${meal.timeColor}">${meal.time}</span>
+          <div class="meal-name">${meal.name}</div>
+          ${meal.sub?`<div class="meal-sub">${meal.sub}</div>`:''}
+        </div>
+        <div class="expand-arrow" style="transform:${open?'rotate(180deg)':'none'}">▼</div>
+      </div>
+      <div class="meal-body ${open?'open':''}">
+        ${meal.options.map(opt=>`<div class="option" style="border-left-color:${meal.timeColor}">
+          <div class="option-title">${opt.title}</div>
+          ${opt.items.map(i=>`<div class="option-item">• ${i}</div>`).join('')}
+          <div class="macro-row">${opt.macros.map(m=>`<span class="macro">${m}</span>`).join('')}</div>
+        </div>`).join('')}
+      </div>
+    </div>`;
+  }).join('');
+  document.getElementById('meals-footer').textContent=activePerson==='mann'?'Ernährungsplan · Muskelaufbau · Schichtdienst':'Ernährungsplan · Abnehmen · 76→60 kg';
+}
+
+function renderPrep(){
+  const plan=PLANS[activePerson];
+  const prepData=plan.prep[activeShift]||plan.prep.tag;
+  document.getElementById('prep-title').textContent=activePerson==='mann'?'🥡 Meal Prep Schichtdienst':'🥡 Meal Prep Zuhause';
+  document.getElementById('prep-title').style.color=plan.color;
+  document.getElementById('prep-content').innerHTML=prepData.map(p=>`
+    <div class="prep-box" style="background:${p.color}15;border-color:${p.color}35">
+      <div class="prep-title" style="color:${p.color}">${p.title}</div>
+      ${p.items.map(i=>`<div class="prep-item">${i}</div>`).join('')}
+    </div>`).join('');
+}
+
+function renderTips(){
+  const plan=PLANS[activePerson];
+  document.getElementById('tips-content').innerHTML=plan.tips.map(t=>`
+    <div class="tip-card">
+      <div class="tip-icon">${t.icon}</div>
+      <div><div class="tip-title">${t.title}</div><div class="tip-text">${t.text}</div></div>
+    </div>`).join('');
+  document.getElementById('tips-footer').textContent=plan.tipFooter;
+}
+
+function renderAll(){renderMeals();renderPrep();renderTips();}
+
+function switchTab(name){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b=>{b.classList.remove('active');b.style.borderTopColor='transparent';});
+  document.getElementById('tab-'+name).classList.add('active');
+  const btn=document.getElementById('nav-'+name);
+  btn.classList.add('active');
+  btn.style.borderTopColor=getColor();
+  btn.style.color=getColor();
+  document.querySelector('.content').scrollTop=0;
+}
+
+setPerson('mann');
+setShift('tag');
+</script>
+</body>
+</html>

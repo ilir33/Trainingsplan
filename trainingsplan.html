@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#0a0a0c">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Trainingsplan">
+<title>Mein Trainingsplan</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;900&family=Barlow:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;background:#0a0a0c;color:#f0ede8;font-family:'Barlow',sans-serif;overflow:hidden}
+#app{display:flex;flex-direction:column;height:100dvh;height:100vh}
+.header{background:linear-gradient(160deg,#1a1a2e,#0f3460);padding:48px 16px 12px;flex-shrink:0;border-bottom:1px solid rgba(255,255,255,.07)}
+.header-label{font-size:10px;letter-spacing:.3em;color:#f4a261;text-transform:uppercase;font-weight:700;font-family:'Barlow Condensed',sans-serif}
+.header h1{font-family:'Barlow Condensed',sans-serif;font-size:28px;font-weight:900;letter-spacing:-.02em;line-height:1;margin:3px 0 7px}
+.badges{display:flex;gap:6px;flex-wrap:wrap}
+.badge{background:rgba(255,255,255,.08);border-radius:20px;padding:3px 9px;font-size:10px}
+.content{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.tab{display:none;padding:14px}
+.tab.active{display:block}
+.bottom-nav{display:flex;background:#111113;border-top:1px solid rgba(255,255,255,.07);flex-shrink:0;padding-bottom:env(safe-area-inset-bottom,0px)}
+.nav-btn{flex:1;padding:10px 4px 7px;background:none;border:none;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;color:#6b7280;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;border-top:2px solid transparent;transition:all .2s;font-family:'Barlow',sans-serif}
+.nav-btn.active{color:#f4a261;border-top-color:#f4a261}
+.nav-icon{font-size:22px}
+.mode-toggle{display:flex;background:#141416;border-radius:14px;padding:4px;margin-bottom:14px;border:1px solid rgba(255,255,255,.08)}
+.mode-btn{flex:1;padding:10px;border-radius:11px;border:none;cursor:pointer;font-weight:700;font-size:14px;transition:all .25s;background:transparent;color:#6b7280;font-family:'Barlow',sans-serif}
+.day-scroll{display:flex;gap:10px;overflow-x:auto;margin-bottom:14px;padding-bottom:4px;scrollbar-width:none}
+.day-scroll::-webkit-scrollbar{display:none}
+.day-pill{flex-shrink:0;padding:10px 14px;border-radius:16px;border:2px solid rgba(255,255,255,.08);background:#141416;cursor:pointer;transition:all .2s;text-align:center;min-width:105px}
+.pill-emoji{font-size:20px;margin-bottom:3px}
+.pill-tag{font-weight:700;font-size:14px}
+.pill-focus{font-size:10px;color:#6b7280;margin-top:2px;line-height:1.3}
+.pill-bar{margin-top:6px;height:3px;background:rgba(255,255,255,.1);border-radius:10px;overflow:hidden}
+.pill-fill{height:100%;border-radius:10px;transition:width .3s}
+.day-hdr{border-radius:16px;padding:14px 16px;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center}
+.dh-pct{font-family:'Barlow Condensed',sans-serif;font-size:34px;font-weight:900;line-height:1}
+.ex-card{background:#141416;border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:14px;margin-bottom:10px}
+.ex-name{font-weight:700;font-size:16px;line-height:1.2}
+.ex-detail{font-size:11px;color:#6b7280;margin-top:2px;margin-bottom:8px}
+.ex-tags{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+.ex-tag{padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700}
+.set-row{display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap}
+.set-btn{width:42px;height:42px;border-radius:12px;border:2px solid rgba(255,255,255,.15);background:#1c1c1f;color:#6b7280;font-weight:700;font-size:15px;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;font-family:'Barlow',sans-serif}
+.ex-body{display:none}
+.ex-body.open{display:block}
+.ex-tip{background:rgba(255,255,255,.04);border-radius:10px;padding:8px 10px;font-size:12px;color:#9ca3af;border-left:3px solid;line-height:1.5;margin-bottom:10px}
+.yt-btn{display:flex;align-items:center;gap:8px;background:#ff000018;border:1px solid #ff000040;border-radius:10px;padding:10px 12px;text-decoration:none;color:#ff4444;font-weight:700;font-size:13px}
+.yt-icon{font-size:20px}
+.tip-card{background:#141416;border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:14px;margin-bottom:10px;display:flex;gap:12px;align-items:flex-start}
+.tip-icon{font-size:26px;flex-shrink:0}
+.tip-title{font-weight:700;font-size:15px;margin-bottom:4px}
+.tip-text{font-size:13px;color:#9ca3af;line-height:1.55}
+.section-title{font-weight:700;font-size:18px;color:#f4a261;margin-bottom:12px;font-family:'Barlow Condensed',sans-serif;letter-spacing:.02em}
+.section-sub{font-size:13px;color:#9ca3af;margin-bottom:14px;line-height:1.5}
+.info-box{border-radius:16px;padding:14px;margin-top:6px}
+.info-title{font-weight:700;font-size:15px;margin-bottom:6px}
+.info-text{font-size:13px;color:#9ca3af;line-height:1.6}
+.footer{text-align:center;color:#374151;font-size:11px;margin-top:16px;padding-bottom:8px}
+.expand-arrow{color:#6b7280;font-size:16px;margin-left:8px;flex-shrink:0;transition:transform .2s}
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="header">
+    <div class="header-label">Professioneller</div>
+    <h1>Trainingsplan</h1>
+    <div class="badges">
+      <span class="badge" style="color:#f4a261">🔄 Schichtdienst-flexibel</span>
+      <span class="badge" style="color:#2a9d8f">💪 8 Muskelgruppen</span>
+      <span class="badge" style="color:#aaa">▶ YouTube-Anleitungen</span>
+    </div>
+  </div>
+
+  <div class="content">
+    <!-- PLAN TAB -->
+    <div class="tab active" id="tab-plan">
+      <div class="mode-toggle">
+        <button class="mode-btn" id="btn-gym" onclick="setMode('gym')">🏋️ Gym</button>
+        <button class="mode-btn" id="btn-home" onclick="setMode('home')">🏠 Zuhause</button>
+      </div>
+      <div class="day-scroll" id="day-pills"></div>
+      <div class="day-hdr" id="day-hdr"></div>
+      <div id="exercises"></div>
+      <div class="footer">3-Tage Split · Anfänger · Gym & Zuhause</div>
+    </div>
+
+    <!-- TIPPS TAB -->
+    <div class="tab" id="tab-tipps">
+      <div class="section-title">Wichtige Tipps</div>
+      <div id="tips-content"></div>
+      <div class="footer">Bleib dran — du schaffst das! 💪</div>
+    </div>
+
+    <!-- UNTERARME TAB -->
+    <div class="tab" id="tab-unterarme">
+      <div class="section-title">Unterarm-Training</div>
+      <div class="section-sub">2× pro Woche am Ende der Session anhängen.</div>
+      <div id="forearm-content"></div>
+      <div class="info-box" style="background:linear-gradient(135deg,#2a9d8f20,#2a9d8f08);border:1px solid #2a9d8f40">
+        <div class="info-title" style="color:#2a9d8f">🎯 Profi-Tipp: Griffkraft</div>
+        <div class="info-text">Starke Unterarme = bessere Leistung bei <strong style="color:#f0ede8">allen</strong> anderen Übungen. 30 Sekunden täglich an einer Stange hängen reicht für massive Fortschritte.</div>
+      </div>
+      <div class="footer">Unterarme · Zusatztraining</div>
+    </div>
+  </div>
+
+  <div class="bottom-nav">
+    <button class="nav-btn active" id="nav-plan" onclick="switchTab('plan')"><span class="nav-icon">📋</span>Plan</button>
+    <button class="nav-btn" id="nav-tipps" onclick="switchTab('tipps')"><span class="nav-icon">💡</span>Tipps</button>
+    <button class="nav-btn" id="nav-unterarme" onclick="switchTab('unterarme')"><span class="nav-icon">🤜</span>Unterarme</button>
+  </div>
+</div>
+
+<script>
+const DATA = {
+  days:[
+    {tag:"Tag A",focus:"Brust & Trizeps",emoji:"💪",color:"#e63946",
+     gym:[
+      {name:"Bankdrücken",detail:"Langhantel",s:4,wdh:"10–12",p:"90s",tipp:"Schulterblätter zusammenziehen, kontrolliert absenken",yt:"https://www.youtube.com/watch?v=rT7DgCr-3pg"},
+      {name:"Schrägbankdrücken",detail:"Kurzhantel",s:3,wdh:"10–12",p:"75s",tipp:"Obere Brust aktivieren, Ellenbogen leicht nach innen",yt:"https://www.youtube.com/watch?v=DbFgADa2PL8"},
+      {name:"Kabelzug Flys",detail:"Brust",s:3,wdh:"12–15",p:"60s",tipp:"Volle Streckung, Peak-Kontraktion oben halten",yt:"https://www.youtube.com/watch?v=Iwe6AmxVf7o"},
+      {name:"Trizeps Pushdown",detail:"Kabel",s:3,wdh:"12–15",p:"60s",tipp:"Ellenbogen fixiert, nur Unterarm bewegt sich",yt:"https://www.youtube.com/watch?v=2-LAMcpzODU"},
+      {name:"Skull Crushers",detail:"Langhantel",s:3,wdh:"10–12",p:"75s",tipp:"Langsam absenken, Ellenbogen nicht ausweichen",yt:"https://www.youtube.com/watch?v=d_KZxkY_0cM"},
+     ],
+     home:[
+      {name:"Liegestütze",detail:"Klassisch",s:4,wdh:"12–20",p:"60s",tipp:"Körper gerade wie ein Brett, Bauch angespannt",yt:"https://www.youtube.com/watch?v=IODxDxX7oi4"},
+      {name:"Enge Liegestütze",detail:"Trizeps-Fokus",s:3,wdh:"10–15",p:"60s",tipp:"Hände schulterbreit, Trizeps fokussieren",yt:"https://www.youtube.com/watch?v=0pkjOk0EiAk"},
+      {name:"Decline Liegestütze",detail:"Füße erhöht",s:3,wdh:"10–15",p:"75s",tipp:"Stuhl/Sofa nutzen, obere Brust betonen",yt:"https://www.youtube.com/watch?v=SKPab2YC8BE"},
+      {name:"Dips",detail:"Stühle / Tisch",s:3,wdh:"10–15",p:"75s",tipp:"Leicht nach vorne lehnen für Brust-Fokus",yt:"https://www.youtube.com/watch?v=2z8JmcrW-As"},
+      {name:"Diamond Push-Ups",detail:"Rauten-Griff",s:3,wdh:"8–12",p:"60s",tipp:"Hände bilden Raute → maximale Trizeps-Isolation",yt:"https://www.youtube.com/watch?v=J0DnG1_S92I"},
+     ]},
+    {tag:"Tag B",focus:"Rücken & Bizeps",emoji:"🏋️",color:"#2a9d8f",
+     gym:[
+      {name:"Klimmzüge / Latzug",detail:"Breiter Griff",s:4,wdh:"8–12",p:"90s",tipp:"Brust zur Stange, Schulterblätter aktiv einziehen",yt:"https://www.youtube.com/watch?v=eGo4IYlbE5g"},
+      {name:"Kurzhantel-Rudern",detail:"Einarmig",s:4,wdh:"10–12",p:"75s",tipp:"Ellenbogen nah am Körper, volle Dehnung unten",yt:"https://www.youtube.com/watch?v=roCP6wCXPqo"},
+      {name:"Seated Row",detail:"Kabel",s:3,wdh:"12",p:"75s",tipp:"Brust aufrecht, Rücken nicht runden",yt:"https://www.youtube.com/watch?v=GZbfZ033f74"},
+      {name:"Bizeps Curls",detail:"Langhantel",s:3,wdh:"10–12",p:"60s",tipp:"Ellenbogen fest, volle Bewegungsamplitude",yt:"https://www.youtube.com/watch?v=ykJmrZ5v0Oo"},
+      {name:"Hammer Curls",detail:"Kurzhantel",s:3,wdh:"12",p:"60s",tipp:"Neutraler Griff, Unterarme werden mittrainiert",yt:"https://www.youtube.com/watch?v=zC3nLlEvin4"},
+     ],
+     home:[
+      {name:"Tischrudern",detail:"Inverted Rows",s:4,wdh:"10–15",p:"75s",tipp:"Brust zum Tisch, Körper gerade halten",yt:"https://www.youtube.com/watch?v=rloXYB8M3vU"},
+      {name:"Klimmzüge",detail:"Türreck",s:4,wdh:"Max",p:"90s",tipp:"Mit Stuhlhilfe beginnen wenn nötig — kein Problem!",yt:"https://www.youtube.com/watch?v=eGo4IYlbE5g"},
+      {name:"Superman",detail:"Rückenstrecker",s:3,wdh:"15",p:"45s",tipp:"Langsam heben, 2 Sekunden oben halten",yt:"https://www.youtube.com/watch?v=cc6UVRS7PW4"},
+      {name:"Bizeps Curls",detail:"Rucksack / Eimer",s:3,wdh:"12–15",p:"60s",tipp:"Gewicht durch Befüllung anpassen",yt:"https://www.youtube.com/watch?v=ykJmrZ5v0Oo"},
+      {name:"Towel Rows",detail:"Handtuch an Tür",s:3,wdh:"12",p:"60s",tipp:"Handtuch um Türgriff, nach hinten lehnen und ziehen",yt:"https://www.youtube.com/watch?v=rloXYB8M3vU"},
+     ]},
+    {tag:"Tag C",focus:"Schultern, Beine & Bauch",emoji:"🦵",color:"#f4a261",
+     gym:[
+      {name:"Kniebeugen",detail:"Langhantel",s:4,wdh:"10–12",p:"120s",tipp:"Rücken gerade, Knie über Zehen, tief runter",yt:"https://www.youtube.com/watch?v=ultWZbUMPL8"},
+      {name:"Beinpresse",detail:"Maschine",s:3,wdh:"12–15",p:"90s",tipp:"Füße hüftbreit, Knie nicht durchdrücken",yt:"https://www.youtube.com/watch?v=IZxyjW7MPJQ"},
+      {name:"Schulterdrücken",detail:"Kurzhantel",s:4,wdh:"10–12",p:"75s",tipp:"Nicht ins Hohlkreuz fallen, Core angespannt",yt:"https://www.youtube.com/watch?v=qEwKCR5JCog"},
+      {name:"Seitheben",detail:"Kurzhantel",s:3,wdh:"12–15",p:"60s",tipp:"Leicht gebeugte Arme, kontrolliert oben & unten",yt:"https://www.youtube.com/watch?v=3VcKaXpzqRo"},
+      {name:"Plank + Crunch",detail:"Bauch",s:3,wdh:"30s / 15",p:"45s",tipp:"Bauch aktiv einziehen, nicht durchhängen",yt:"https://www.youtube.com/watch?v=ASdvN_XEl_c"},
+     ],
+     home:[
+      {name:"Kniebeugen",detail:"Körpergewicht",s:4,wdh:"15–20",p:"60s",tipp:"Rücken aufrecht, Gewicht auf den Fersen",yt:"https://www.youtube.com/watch?v=ultWZbUMPL8"},
+      {name:"Ausfallschritte",detail:"Alternierend",s:3,wdh:"12 pro Bein",p:"60s",tipp:"Knie nicht über die Zehen, Rumpf stabil",yt:"https://www.youtube.com/watch?v=QOVaHwm-Q6U"},
+      {name:"Schulterpresse",detail:"Wasserflaschen",s:3,wdh:"12–15",p:"60s",tipp:"Improvisation erlaubt — Kreativität gefragt!",yt:"https://www.youtube.com/watch?v=qEwKCR5JCog"},
+      {name:"Seitliches Heben",detail:"Beliebige Last",s:3,wdh:"12–15",p:"60s",tipp:"Langsam und kontrolliert, keine Schwungbewegung",yt:"https://www.youtube.com/watch?v=3VcKaXpzqRo"},
+      {name:"Plank + Crunch + Beinheben",detail:"Core komplett",s:3,wdh:"30s / 15",p:"45s",tipp:"Qualität vor Quantität, Bauch immer angespannt",yt:"https://www.youtube.com/watch?v=ASdvN_XEl_c"},
+     ]}
+  ],
+  forearms:[
+    {name:"Handgelenk-Curls",detail:"Hantel oder Flasche",s:3,wdh:"15–20",tipp:"Am Ende der Session, langsam ausführen",yt:"https://www.youtube.com/watch?v=J-tTMGKmOLk"},
+    {name:"Reverse Curls",detail:"Unterarmstrecker",s:3,wdh:"12–15",tipp:"Handrücken zeigt nach oben, kontrolliert",yt:"https://www.youtube.com/watch?v=nRgxYX2Ve9w"},
+    {name:"Towel Hang",detail:"Handtuch über Stange",s:3,wdh:"Max. Zeit",tipp:"Griffkraft massiv verbessern",yt:"https://www.youtube.com/watch?v=kKNBBJkPMqA"},
+    {name:"Farmer's Walk",detail:"Schwere Taschen",s:3,wdh:"30 Meter",tipp:"Schultern zurück, aufrecht gehen",yt:"https://www.youtube.com/watch?v=Fkzk_RqlYig"},
+  ],
+  tips:[
+    {icon:"🗓️",title:"Schichtdienst-Strategie",text:"A → B → C in beliebiger Reihenfolge, wann immer du Zeit hast. Mindestens 1 Ruhetag dazwischen. Nur 2× diese Woche? Völlig okay!"},
+    {icon:"📈",title:"Progression",text:"Jede Woche: mehr Gewicht ODER mehr Wiederholungen. Auch +1 Wdh ist Fortschritt. Notiere deine Gewichte!"},
+    {icon:"🥗",title:"Ernährung",text:"1,6–2g Protein pro kg Körpergewicht täglich. Eier, Hähnchen, Quark, Hülsenfrüchte, Thunfisch."},
+    {icon:"💧",title:"Hydration",text:"2–3 Liter Wasser täglich. Vor dem Training 500ml trinken. Bei Schichtdienst besonders wichtig!"},
+    {icon:"😴",title:"Schlaf & Erholung",text:"7–9 Stunden Schlaf. Muskeln wachsen in der Erholung, nicht im Training. Schlaf ist dein bestes Supplement."},
+    {icon:"🔄",title:"Warm-Up",text:"5–10 Min. leichtes Cardio + Mobility vor jedem Training. Verletzungen vermeiden ist wichtiger als Zeit sparen."},
+    {icon:"📏",title:"Anfänger-Tipp",text:"Starte leicht mit perfekter Technik. Lieber 10 saubere Wdh als 15 schlechte. Technik schützt vor Verletzungen."},
+  ]
+};
+
+let state = {mode:'gym', day:0, sets:{}, expanded:{}};
+function sk(d,m,e,s){return d+'-'+m+'-'+e+'-'+s}
+function save(){try{localStorage.setItem('tp2',JSON.stringify(state))}catch(e){}}
+function load(){try{const s=localStorage.getItem('tp2');if(s){const p=JSON.parse(s);state.mode=p.mode||'gym';state.day=p.day||0;state.sets=p.sets||{};}}catch(e){}}
+
+function prog(d,m){
+  const ex=DATA.days[d][m];let t=0,dn=0;
+  ex.forEach((e,ei)=>{for(let s=0;s<e.s;s++){t++;if(state.sets[sk(d,m,ei,s)])dn++;}});
+  return t===0?0:Math.round(dn/t*100);
+}
+
+function setMode(m){
+  state.mode=m;
+  document.getElementById('btn-gym').style.cssText=m==='gym'?'background:#e63946;color:#fff':'background:transparent;color:#6b7280';
+  document.getElementById('btn-home').style.cssText=m==='home'?'background:#2a9d8f;color:#fff':'background:transparent;color:#6b7280';
+  render();save();
+}
+
+function setDay(d){state.day=d;state.expanded={};render();save();}
+
+function toggleSet(ei,si){
+  const k=sk(state.day,state.mode,ei,si);
+  state.sets[k]=!state.sets[k];
+  render();save();
+}
+
+function toggleEx(id){
+  state.expanded[id]=!state.expanded[id];
+  render();
+}
+
+function render(){
+  const d=DATA.days[state.day];const m=state.mode;const c=d.color;
+  const p=prog(state.day,m);
+
+  // pills
+  document.getElementById('day-pills').innerHTML=DATA.days.map((day,i)=>{
+    const pr=prog(i,m);const a=i===state.day;
+    return`<div class="day-pill" onclick="setDay(${i})" style="border-color:${a?day.color:'rgba(255,255,255,.08)'};background:${a?day.color+'20':'#141416'}">
+      <div class="pill-emoji">${day.emoji}</div>
+      <div class="pill-tag" style="color:${a?day.color:'#9ca3af'}">${day.tag}</div>
+      <div class="pill-focus">${day.focus}</div>
+      ${pr>0?`<div class="pill-bar"><div class="pill-fill" style="width:${pr}%;background:${day.color}"></div></div>`:''}
+    </div>`;
+  }).join('');
+
+  // day header
+  document.getElementById('day-hdr').style.cssText=`border-radius:16px;padding:14px 16px;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center;background:${c}15;border:1px solid ${c}35`;
+  document.getElementById('day-hdr').innerHTML=`
+    <div><div style="font-size:22px">${d.emoji}</div>
+    <div style="font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:900;color:${c}">${d.tag}</div>
+    <div style="font-size:12px;color:#9ca3af">${d.focus}</div></div>
+    <div style="text-align:right"><div class="dh-pct" style="color:${c}">${p}%</div><div style="font-size:10px;color:#6b7280">fertig</div></div>`;
+
+  // exercises
+  document.getElementById('exercises').innerHTML=d[m].map((ex,ei)=>{
+    const expKey=state.day+'-'+m+'-'+ei;
+    const open=!!state.expanded[expKey];
+    const sets=Array.from({length:ex.s},(_,si)=>{
+      const done=state.sets[sk(state.day,m,ei,si)];
+      return`<button class="set-btn" onclick="toggleSet(${ei},${si})" style="${done?`background:${c};border-color:${c};color:#fff`:''}">${done?'✓':si+1}</button>`;
+    }).join('');
+    return`<div class="ex-card">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;cursor:pointer" onclick="toggleEx('${expKey}')">
+        <div><div class="ex-name">${ex.name}</div><div class="ex-detail">${ex.detail}</div></div>
+        <div class="expand-arrow" style="transform:${open?'rotate(180deg)':'rotate(0)'}">▼</div>
+      </div>
+      <div class="ex-tags">
+        <span class="ex-tag" style="background:${c}25;color:${c}">${ex.s} Sätze</span>
+        <span class="ex-tag" style="background:rgba(255,255,255,.08);color:#9ca3af;font-weight:400">${ex.wdh} Wdh</span>
+        <span class="ex-tag" style="background:rgba(255,255,255,.08);color:#9ca3af;font-weight:400">⏱ ${ex.p}</span>
+      </div>
+      <div class="set-row">${sets}</div>
+      <div class="ex-body ${open?'open':''}">
+        <div class="ex-tip" style="border-left-color:${c}80">💡 ${ex.tipp}</div>
+        <a class="yt-btn" href="${ex.yt}" target="_blank"><span class="yt-icon">▶</span> Anleitung auf YouTube ansehen</a>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderTips(){
+  document.getElementById('tips-content').innerHTML=DATA.tips.map(t=>`
+    <div class="tip-card">
+      <div class="tip-icon">${t.icon}</div>
+      <div><div class="tip-title">${t.title}</div><div class="tip-text">${t.text}</div></div>
+    </div>`).join('')+`
+  <div class="info-box" style="background:linear-gradient(135deg,#f4a26120,#e6394615);border:1px solid #f4a26140">
+    <div class="info-title" style="color:#f4a261">🗓️ Schichtdienst-Strategie</div>
+    <div class="info-text">Arbeite A → B → C durch — wann immer du Zeit hast. Mindestens <strong style="color:#f0ede8">1 Ruhetag</strong> dazwischen. <strong style="color:#f0ede8">Konsistenz über Monate zählt mehr als Perfektion jede Woche.</strong></div>
+  </div>`;
+}
+
+function renderForearms(){
+  document.getElementById('forearm-content').innerHTML=DATA.forearms.map(f=>`
+    <div class="ex-card">
+      <div class="ex-name">${f.name}</div><div class="ex-detail">${f.detail}</div>
+      <div class="ex-tags">
+        <span class="ex-tag" style="background:#f4a26125;color:#f4a261">${f.s} Sätze</span>
+        <span class="ex-tag" style="background:rgba(255,255,255,.08);color:#9ca3af;font-weight:400">${f.wdh}</span>
+      </div>
+      <div class="ex-tip" style="border-left-color:#f4a26180">💡 ${f.tipp}</div>
+      <a class="yt-btn" href="${f.yt}" target="_blank"><span class="yt-icon">▶</span> Anleitung auf YouTube ansehen</a>
+    </div>`).join('');
+}
+
+function switchTab(name){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('tab-'+name).classList.add('active');
+  document.getElementById('nav-'+name).classList.add('active');
+  document.querySelector('.content').scrollTop=0;
+}
+
+load();
+setMode(state.mode);
+renderTips();
+renderForearms();
+render();
+</script>
+</body>
+</html>
