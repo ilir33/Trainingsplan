@@ -1,0 +1,984 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Büro-Ausbildung – Übungsplan</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Serif+Display:ital@0;1&display=swap');
+
+  :root {
+    --cream: #F5F2EC;
+    --ink: #1A1A2E;
+    --slate: #4A5568;
+    --accent: #2D6A9F;
+    --accent-light: #EBF4FF;
+    --green: #276749;
+    --green-light: #E6F4ED;
+    --amber: #B7701F;
+    --amber-light: #FEF3E2;
+    --border: #E2DDD5;
+    --done: #276749;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--cream);
+    color: var(--ink);
+    min-height: 100vh;
+  }
+
+  header {
+    background: var(--ink);
+    color: var(--cream);
+    padding: 2rem 1.5rem 1.5rem;
+    text-align: center;
+  }
+
+  header .eyebrow {
+    font-size: 0.7rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: #8899AA;
+    margin-bottom: 0.5rem;
+  }
+
+  header h1 {
+    font-family: 'DM Serif Display', serif;
+    font-size: clamp(1.6rem, 5vw, 2.4rem);
+    line-height: 1.15;
+    margin-bottom: 0.4rem;
+  }
+
+  header h1 em {
+    font-style: italic;
+    color: #90BDDF;
+  }
+
+  header p {
+    font-size: 0.85rem;
+    color: #8899AA;
+    margin-top: 0.5rem;
+  }
+
+  /* Progress bar */
+  .progress-wrap {
+    background: var(--ink);
+    padding: 0 1.5rem 1.5rem;
+  }
+
+  .progress-label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.72rem;
+    color: #8899AA;
+    margin-bottom: 0.4rem;
+  }
+
+  .progress-bar {
+    height: 5px;
+    background: #2A3550;
+    border-radius: 99px;
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: #90BDDF;
+    border-radius: 99px;
+    transition: width 0.5s ease;
+  }
+
+  /* Week navigation */
+  .week-nav {
+    display: flex;
+    gap: 0.4rem;
+    padding: 1rem 1.5rem;
+    overflow-x: auto;
+    background: white;
+    border-bottom: 1px solid var(--border);
+    scrollbar-width: none;
+  }
+
+  .week-nav::-webkit-scrollbar { display: none; }
+
+  .week-btn {
+    flex-shrink: 0;
+    padding: 0.35rem 0.85rem;
+    border-radius: 99px;
+    border: 1.5px solid var(--border);
+    background: white;
+    color: var(--slate);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.78rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .week-btn.active {
+    background: var(--ink);
+    color: var(--cream);
+    border-color: var(--ink);
+  }
+
+  .week-btn.completed {
+    border-color: var(--green);
+    color: var(--green);
+  }
+
+  /* Main content */
+  main {
+    max-width: 640px;
+    margin: 0 auto;
+    padding: 1.5rem 1rem 4rem;
+  }
+
+  .week-header {
+    margin-bottom: 1.25rem;
+  }
+
+  .week-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.5rem;
+    color: var(--ink);
+  }
+
+  .week-subtitle {
+    font-size: 0.82rem;
+    color: var(--slate);
+    margin-top: 0.2rem;
+  }
+
+  .week-theme {
+    display: inline-block;
+    background: var(--accent-light);
+    color: var(--accent);
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    padding: 0.25rem 0.7rem;
+    border-radius: 99px;
+    margin-top: 0.6rem;
+  }
+
+  /* Day cards */
+  .day-card {
+    background: white;
+    border: 1.5px solid var(--border);
+    border-radius: 12px;
+    margin-bottom: 0.75rem;
+    overflow: hidden;
+    transition: border-color 0.2s;
+  }
+
+  .day-card.done {
+    border-color: var(--green);
+    background: var(--green-light);
+  }
+
+  .day-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.9rem 1rem;
+    cursor: pointer;
+  }
+
+  .day-dot {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 2px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--slate);
+    flex-shrink: 0;
+    transition: all 0.2s;
+    background: white;
+  }
+
+  .day-card.done .day-dot {
+    background: var(--green);
+    border-color: var(--green);
+    color: white;
+  }
+
+  .day-info { flex: 1; }
+
+  .day-name {
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: var(--ink);
+  }
+
+  .day-focus {
+    font-size: 0.78rem;
+    color: var(--slate);
+    margin-top: 0.1rem;
+  }
+
+  .day-duration {
+    font-size: 0.72rem;
+    color: var(--slate);
+    background: var(--cream);
+    padding: 0.2rem 0.55rem;
+    border-radius: 99px;
+    border: 1px solid var(--border);
+  }
+
+  .day-card.done .day-duration {
+    background: white;
+    border-color: var(--green);
+    color: var(--green);
+  }
+
+  /* Expanded tasks */
+  .day-tasks {
+    display: none;
+    padding: 0 1rem 1rem;
+    border-top: 1px solid var(--border);
+  }
+
+  .day-card.open .day-tasks { display: block; }
+  .day-card.done .day-tasks { display: block; }
+
+  .task-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.6rem;
+    padding: 0.6rem 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .task-item:last-child { border-bottom: none; }
+
+  .task-check {
+    width: 18px;
+    height: 18px;
+    border: 1.5px solid var(--border);
+    border-radius: 4px;
+    flex-shrink: 0;
+    margin-top: 1px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s;
+    background: white;
+  }
+
+  .task-check.checked {
+    background: var(--green);
+    border-color: var(--green);
+  }
+
+  .task-check.checked::after {
+    content: '✓';
+    color: white;
+    font-size: 11px;
+    font-weight: 700;
+  }
+
+  .task-text { font-size: 0.83rem; line-height: 1.45; color: var(--ink); }
+
+  .task-tag {
+    display: inline-block;
+    font-size: 0.65rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    padding: 0.1rem 0.45rem;
+    border-radius: 4px;
+    margin-right: 0.3rem;
+  }
+
+  .tag-office { background: #DBEAFE; color: #1D4ED8; }
+  .tag-schreiben { background: #FEE2E2; color: #B91C1C; }
+  .tag-buch { background: #FEF3C7; color: #92400E; }
+  .tag-komm { background: #F3E8FF; color: #6B21A8; }
+  .tag-praxis { background: var(--green-light); color: var(--green); }
+
+  /* Rest day */
+  .rest-card {
+    background: var(--cream);
+    border: 1.5px dashed var(--border);
+    border-radius: 12px;
+    padding: 0.9rem 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
+    color: var(--slate);
+    font-size: 0.84rem;
+  }
+
+  .rest-icon { font-size: 1.2rem; }
+
+  /* Tip box */
+  .tip-box {
+    background: var(--amber-light);
+    border: 1.5px solid #F6D08A;
+    border-radius: 10px;
+    padding: 0.9rem 1rem;
+    margin-top: 1.25rem;
+    font-size: 0.82rem;
+    color: var(--amber);
+    line-height: 1.5;
+  }
+
+  .tip-box strong { display: block; margin-bottom: 0.3rem; font-size: 0.78rem; letter-spacing: 0.05em; text-transform: uppercase; }
+
+  /* Mark week done button */
+  .mark-btn {
+    width: 100%;
+    margin-top: 1.25rem;
+    padding: 0.85rem;
+    border-radius: 10px;
+    border: none;
+    background: var(--ink);
+    color: var(--cream);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.88rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+
+  .mark-btn:hover { background: #2A3550; }
+  .mark-btn.done-btn { background: var(--green); }
+
+  /* Resources */
+  .resources {
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border);
+  }
+
+  .resources h3 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.1rem;
+    margin-bottom: 0.9rem;
+  }
+
+  .resource-item {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.65rem 0;
+    border-bottom: 1px solid var(--border);
+    text-decoration: none;
+    color: var(--ink);
+    font-size: 0.83rem;
+  }
+
+  .resource-item:last-child { border-bottom: none; }
+
+  .resource-icon {
+    width: 30px;
+    height: 30px;
+    background: var(--accent-light);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.9rem;
+    flex-shrink: 0;
+  }
+
+  .resource-item a { color: var(--accent); text-decoration: underline; font-size: 0.75rem; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="eyebrow">PPC Training · Büro & Verwaltungsassistenz</div>
+  <h1>Dein persönlicher<br><em>Übungsplan</em></h1>
+  <p>8 Wochen · 30–60 Min täglich · Montag bis Freitag</p>
+</header>
+
+<div class="progress-wrap">
+  <div class="progress-label">
+    <span>Fortschritt</span>
+    <span id="progress-text">0 von 8 Wochen</span>
+  </div>
+  <div class="progress-bar">
+    <div class="progress-fill" id="progress-fill" style="width:0%"></div>
+  </div>
+</div>
+
+<div class="week-nav" id="week-nav"></div>
+
+<main id="main-content"></main>
+
+<script>
+const weeks = [
+  {
+    title: "Woche 1",
+    theme: "Orientierung & Word Grundlagen",
+    tip: "Keine Hektik – diese Woche geht es nur ums Ankommen. Lieber langsam und richtig als schnell und falsch.",
+    days: [
+      {
+        name: "Montag", duration: "45 Min",
+        focus: "Word: Dokument erstellen",
+        tasks: [
+          { tag: "office", text: "Word öffnen, einen einfachen Brief mit deinem Namen und Adresse tippen" },
+          { tag: "office", text: "Schriftart und -größe ändern (Calibri 11pt ist Bürostandard)" },
+          { tag: "schreiben", text: "Übungstext: Schreibe 5 Sätze über deinen Alltag und prüfe die Rechtschreibung" },
+        ]
+      },
+      {
+        name: "Dienstag", duration: "45 Min",
+        focus: "Word: Formatierung",
+        tasks: [
+          { tag: "office", text: "Fett, Kursiv, Unterstrichen ausprobieren" },
+          { tag: "office", text: "Absätze und Zeilenabstand einstellen (1,15 oder 1,5)" },
+          { tag: "office", text: "Seitenränder auf 2,5 cm setzen (typischer Bürostandard)" },
+        ]
+      },
+      {
+        name: "Mittwoch", duration: "30 Min",
+        focus: "E-Mail Grundlagen",
+        tasks: [
+          { tag: "komm", text: "Aufbau einer professionellen E-Mail lernen: Betreff, Anrede, Text, Grußformel" },
+          { tag: "schreiben", text: "Eine Muster-E-Mail schreiben: Anfrage bei einem Lieferanten (Übungstext)" },
+          { tag: "komm", text: "Wichtig: Immer 'Sehr geehrte Damen und Herren' bei unbekannten Empfängern" },
+        ]
+      },
+      {
+        name: "Donnerstag", duration: "45 Min",
+        focus: "Word: Tabellen",
+        tasks: [
+          { tag: "office", text: "Eine einfache Tabelle in Word einfügen (3 Spalten, 5 Zeilen)" },
+          { tag: "office", text: "Tabelle mit Beispieldaten füllen (z.B. Wochentag, Aufgabe, Erledigt)" },
+          { tag: "praxis", text: "Die Tabelle schön formatieren: Kopfzeile fett, Rahmen anpassen" },
+        ]
+      },
+      {
+        name: "Freitag", duration: "30 Min",
+        focus: "Wiederholung & Wochenreflexion",
+        tasks: [
+          { tag: "praxis", text: "Alles aus dieser Woche nochmal kurz wiederholen" },
+          { tag: "schreiben", text: "Einen vollständigen Geschäftsbrief in Word schreiben (Vorlage googeln: 'österreichischer Geschäftsbrief Muster')" },
+          { tag: "komm", text: "Überlege: Was war leicht? Was braucht noch Übung?" },
+        ]
+      }
+    ]
+  },
+  {
+    title: "Woche 2",
+    theme: "Excel Einstieg",
+    tip: "Excel klingt schwierig, ist aber logisch. Denk daran: Jede Formel beginnt mit = und du gibst der Zelle einen Befehl.",
+    days: [
+      {
+        name: "Montag", duration: "45 Min",
+        focus: "Excel: Erste Schritte",
+        tasks: [
+          { tag: "office", text: "Excel öffnen, eine neue Tabelle anlegen" },
+          { tag: "office", text: "Zellen kennenlernen: A1, B2, C3 – was bedeuten Spalten und Zeilen?" },
+          { tag: "office", text: "Zahlen und Text eingeben, Spaltenbreite anpassen" },
+        ]
+      },
+      {
+        name: "Dienstag", duration: "45 Min",
+        focus: "Excel: Grundformeln",
+        tasks: [
+          { tag: "office", text: "Formel =SUMME() üben: z.B. 10 Zahlen eingeben und addieren" },
+          { tag: "office", text: "=MITTELWERT() und =MAX() ausprobieren" },
+          { tag: "praxis", text: "Einkaufsliste mit Preisen erstellen und Gesamtsumme berechnen" },
+        ]
+      },
+      {
+        name: "Mittwoch", duration: "30 Min",
+        focus: "Kaufmännische Grundbegriffe",
+        tasks: [
+          { tag: "buch", text: "Begriffe nachschlagen: Rechnung, Beleg, Buchung, Soll/Haben" },
+          { tag: "buch", text: "Was ist der Unterschied zwischen Einnahmen und Ausgaben?" },
+          { tag: "buch", text: "Was ist die Umsatzsteuer (USt.) in Österreich? (20% / 10%)" },
+        ]
+      },
+      {
+        name: "Donnerstag", duration: "45 Min",
+        focus: "Excel: Tabelle formatieren",
+        tasks: [
+          { tag: "office", text: "Eine Monatsumsatz-Tabelle erstellen (Jan–Dez mit Beispielzahlen)" },
+          { tag: "office", text: "Zahlenformat auf 'Währung' (€) stellen" },
+          { tag: "praxis", text: "Gesamtsumme und Durchschnitt berechnen mit =SUMME und =MITTELWERT" },
+        ]
+      },
+      {
+        name: "Freitag", duration: "30 Min",
+        focus: "Schreibübung",
+        tasks: [
+          { tag: "schreiben", text: "Eine Bestellanfrage schreiben: 'Sehr geehrte Damen und Herren, ich möchte folgende Artikel bestellen...'" },
+          { tag: "schreiben", text: "Text im Duden-Mentor (online) auf Fehler prüfen lassen" },
+          { tag: "komm", text: "Auf Groß-/Kleinschreibung achten: alle Nomen groß!" },
+        ]
+      }
+    ]
+  },
+  {
+    title: "Woche 3",
+    theme: "Büroorganisation & Outlook",
+    tip: "Organisation ist eine Fähigkeit, kein Talent. Mit System arbeiten bedeutet weniger Stress und weniger Fehler.",
+    days: [
+      {
+        name: "Montag", duration: "45 Min",
+        focus: "Outlook / E-Mail Verwaltung",
+        tasks: [
+          { tag: "office", text: "Ordnerstruktur in Outlook anlegen: Eingang, Erledigt, Zu bearbeiten, Archiv" },
+          { tag: "komm", text: "E-Mail-Regeln kennenlernen: Wie sortiert man E-Mails automatisch?" },
+          { tag: "praxis", text: "Einen Termin im Kalender eintragen (z.B. Kurstermin)" },
+        ]
+      },
+      {
+        name: "Dienstag", duration: "45 Min",
+        focus: "Ablage & Dokumentenmanagement",
+        tasks: [
+          { tag: "praxis", text: "Ordnerstruktur am Computer anlegen: nach Jahr → Monat → Thema" },
+          { tag: "praxis", text: "Dateien sinnvoll benennen: 2024_01_Rechnung_Mustermann.pdf" },
+          { tag: "schreiben", text: "Eine Aufgabenliste für den nächsten Tag erstellen (To-Do)" },
+        ]
+      },
+      {
+        name: "Mittwoch", duration: "30 Min",
+        focus: "Kommunikation am Telefon",
+        tasks: [
+          { tag: "komm", text: "Wie meldet man sich professionell am Telefon? 'Firma XY, [Name], guten Tag.'" },
+          { tag: "komm", text: "Lerne: Was ist eine Gesprächsnotiz? Wann und warum schreibt man eine?" },
+          { tag: "schreiben", text: "Eine Telefonnotiz schreiben: Datum, Anrufer, Betreff, Rückruf bis..." },
+        ]
+      },
+      {
+        name: "Donnerstag", duration: "45 Min",
+        focus: "Excel: Diagramm erstellen",
+        tasks: [
+          { tag: "office", text: "Die Monatstabelle aus Woche 2 öffnen" },
+          { tag: "office", text: "Ein einfaches Säulendiagramm aus den Daten erstellen" },
+          { tag: "office", text: "Diagrammtitel und Achsenbeschriftungen hinzufügen" },
+        ]
+      },
+      {
+        name: "Freitag", duration: "30 Min",
+        focus: "Rechtschreibung üben",
+        tasks: [
+          { tag: "schreiben", text: "10 häufige Fehler im Deutschen nachschlagen (z.B. das/dass, seit/seid)" },
+          { tag: "schreiben", text: "Einen kurzen Text (10 Sätze) tippen ohne Autokorrektur, dann selbst prüfen" },
+          { tag: "praxis", text: "Duden online bookmarken: duden.de – dein bestes Werkzeug!" },
+        ]
+      }
+    ]
+  },
+  {
+    title: "Woche 4",
+    theme: "Buchhaltung Grundlagen",
+    tip: "Buchhaltung ist kein Hexenwerk – es geht darum, jeden Geldfluss aufzuzeichnen. Einnahmen rein, Ausgaben raus, alles dokumentiert.",
+    days: [
+      {
+        name: "Montag", duration: "45 Min",
+        focus: "Einnahmen-Ausgaben-Rechnung",
+        tasks: [
+          { tag: "buch", text: "Was ist eine EAR (Einnahmen-Ausgaben-Rechnung)? Für wen gilt sie in Österreich?" },
+          { tag: "buch", text: "YouTube: 'Einnahmen Ausgaben Rechnung Österreich Grundlagen' anschauen" },
+          { tag: "buch", text: "Eine einfache EAR-Tabelle in Excel anlegen (Datum, Beschreibung, Einnahme, Ausgabe)" },
+        ]
+      },
+      {
+        name: "Dienstag", duration: "45 Min",
+        focus: "Rechnungen & Belege",
+        tasks: [
+          { tag: "buch", text: "Was muss eine korrekte Rechnung in Österreich enthalten? (Pflichtangaben)" },
+          { tag: "buch", text: "Pflichtangaben: Rechnungsnummer, Datum, Leistungsbeschreibung, Betrag, USt." },
+          { tag: "praxis", text: "Eine Musterrechnung in Word erstellen (für ein fiktives Büromaterialgeschäft)" },
+        ]
+      },
+      {
+        name: "Mittwoch", duration: "30 Min",
+        focus: "Kassaführung",
+        tasks: [
+          { tag: "buch", text: "Was ist ein Kassabuch? Wann braucht man es?" },
+          { tag: "buch", text: "Ein einfaches Kassabuch in Excel anlegen mit Anfangsbestand und Transaktionen" },
+          { tag: "buch", text: "Saldo berechnen lassen mit =SUMME()" },
+        ]
+      },
+      {
+        name: "Donnerstag", duration: "45 Min",
+        focus: "Word: Fortgeschrittene Formatierung",
+        tasks: [
+          { tag: "office", text: "Kopf- und Fußzeile in Word einfügen (Seitenzahl, Firmenname)" },
+          { tag: "office", text: "Inhaltsverzeichnis automatisch erstellen (Überschriftenstile nutzen)" },
+          { tag: "praxis", text: "Ein 2-seitiges Dokument erstellen: Betriebs-Info mit Inhaltsverzeichnis" },
+        ]
+      },
+      {
+        name: "Freitag", duration: "30 Min",
+        focus: "Wiederholung Buchhaltung",
+        tasks: [
+          { tag: "buch", text: "Begriffe wiederholen: Brutto, Netto, USt., Vorsteuer" },
+          { tag: "schreiben", text: "Erkläre in 3 Sätzen (schriftlich!): Was ist der Unterschied zwischen Brutto und Netto?" },
+          { tag: "praxis", text: "Einfache Übungsaufgabe: 100€ + 20% MwSt. = ? Netto aus Brutto rechnen" },
+        ]
+      }
+    ]
+  },
+  {
+    title: "Woche 5",
+    theme: "Geschäftskorrespondenz",
+    tip: "Gute Briefe und E-Mails sind kurz, klar und höflich. Im Büro schreibt man nicht wie auf WhatsApp!",
+    days: [
+      {
+        name: "Montag", duration: "45 Min",
+        focus: "Geschäftsbriefe – Aufbau",
+        tasks: [
+          { tag: "schreiben", text: "Aufbau eines österreichischen Geschäftsbriefs: Absender, Empfänger, Datum, Betreff, Text, Grußformel" },
+          { tag: "schreiben", text: "Einen Anfragenbrief schreiben: 'Wir bitten um Zusendung Ihres Katalogs...'" },
+          { tag: "office", text: "Brief in Word mit korrektem Layout formatieren (Rand 2,5cm, Schrift Calibri 11)" },
+        ]
+      },
+      {
+        name: "Dienstag", duration: "45 Min",
+        focus: "Bestellungen & Anfragen",
+        tasks: [
+          { tag: "schreiben", text: "Eine Bestellung schreiben: Artikel, Menge, Artikelnummer, Lieferadresse" },
+          { tag: "schreiben", text: "Eine Angebotsanfrage schreiben: 'Bitte senden Sie uns ein Angebot für...'" },
+          { tag: "praxis", text: "Beide Briefe in Word tippen und als PDF speichern" },
+        ]
+      },
+      {
+        name: "Mittwoch", duration: "30 Min",
+        focus: "Beschwerden & Reklamationen",
+        tasks: [
+          { tag: "schreiben", text: "Wie schreibt man eine höfliche Beschwerde? Sachlich, nicht emotional!" },
+          { tag: "schreiben", text: "Einen Reklamationsbrief schreiben: Lieferung war falsch/beschädigt" },
+          { tag: "komm", text: "Wichtig: Immer eine Frist setzen und konkrete Lösung vorschlagen" },
+        ]
+      },
+      {
+        name: "Donnerstag", duration: "45 Min",
+        focus: "Excel: WENN-Funktion",
+        tasks: [
+          { tag: "office", text: "Die WENN-Funktion lernen: =WENN(Bedingung; dann; sonst)" },
+          { tag: "office", text: "Beispiel: =WENN(A1>100; 'Gut'; 'Zu wenig') in einer Umsatzliste" },
+          { tag: "praxis", text: "Eine Checkliste in Excel erstellen: Aufgabe, Status (Ja/Nein), automatische Ampelfarbe" },
+        ]
+      },
+      {
+        name: "Freitag", duration: "30 Min",
+        focus: "Freitext-Übung",
+        tasks: [
+          { tag: "schreiben", text: "Schreibe einen vollständigen Geschäftsbrief ohne Vorlage, nur aus dem Gedächtnis" },
+          { tag: "schreiben", text: "Prüfe selbst: Sind alle Pflichtteile vorhanden? Rechtschreibung? Höflichkeit?" },
+          { tag: "komm", text: "Zeige den Brief jemandem und frage um Feedback" },
+        ]
+      }
+    ]
+  },
+  {
+    title: "Woche 6",
+    theme: "Internet, Recherche & digitales Arbeiten",
+    tip: "Das Internet ist ein Werkzeug – wer gut recherchieren kann, spart Zeit und findet bessere Antworten.",
+    days: [
+      {
+        name: "Montag", duration: "30 Min",
+        focus: "Effizient suchen im Internet",
+        tasks: [
+          { tag: "office", text: "Google-Suche verbessern: Anführungszeichen für genaue Suche, site: für bestimmte Websites" },
+          { tag: "praxis", text: "Übung: Finde die Öffnungszeiten des Wiener Magistrats auf WKO.at" },
+          { tag: "praxis", text: "Lesezeichen/Bookmarks anlegen für wichtige Büro-Websites" },
+        ]
+      },
+      {
+        name: "Dienstag", duration: "45 Min",
+        focus: "PDF & Dateimanagement",
+        tasks: [
+          { tag: "office", text: "Word-Dokument als PDF speichern (Datei → Speichern unter → PDF)" },
+          { tag: "office", text: "PDF mit Adobe Reader oder Browser öffnen und ausfüllen" },
+          { tag: "praxis", text: "Dateien komprimieren (ZIP) – wozu braucht man das im Büro?" },
+        ]
+      },
+      {
+        name: "Mittwoch", duration: "30 Min",
+        focus: "Videokonferenzen & digitale Tools",
+        tasks: [
+          { tag: "office", text: "Zoom oder Teams: Account erstellen, Mikrofon und Kamera testen" },
+          { tag: "komm", text: "Wie verhält man sich professionell in einer Videokonferenz?" },
+          { tag: "praxis", text: "Einen Kalendertermin in Outlook mit Einladungslink anlegen" },
+        ]
+      },
+      {
+        name: "Donnerstag", duration: "45 Min",
+        focus: "Excel Wiederholung & neue Übung",
+        tasks: [
+          { tag: "office", text: "Eine komplette Lagerliste in Excel erstellen: Artikel, Menge, Preis, Gesamtwert" },
+          { tag: "office", text: "=SUMMEWENN() kennenlernen: Nur bestimmte Kategorien summieren" },
+          { tag: "praxis", text: "Die Tabelle druckfertig machen: Druckbereich festlegen, Seitenansicht prüfen" },
+        ]
+      },
+      {
+        name: "Freitag", duration: "30 Min",
+        focus: "Wochenrückblick",
+        tasks: [
+          { tag: "komm", text: "Was hast du diese Woche gelernt? Schreibe 5 neue Dinge auf (auf Papier oder Word)" },
+          { tag: "praxis", text: "Einen eigenen 'Spickzettel' mit den wichtigsten Excel-Formeln erstellen" },
+          { tag: "schreiben", text: "Eine kurze Zusammenfassung der Woche in guten Sätzen formulieren" },
+        ]
+      }
+    ]
+  },
+  {
+    title: "Woche 7",
+    theme: "Kommunikation & Konfliktkompetenz",
+    tip: "Gute Kommunikation ist die wichtigste Fähigkeit im Büro – und sie lässt sich gezielt trainieren.",
+    days: [
+      {
+        name: "Montag", duration: "30 Min",
+        focus: "Aktives Zuhören",
+        tasks: [
+          { tag: "komm", text: "Was bedeutet 'aktives Zuhören'? Augenkontakt, nicht unterbrechen, nachfragen" },
+          { tag: "komm", text: "Übe heute bewusst: In einem Gespräch zuhören und danach zusammenfassen" },
+          { tag: "schreiben", text: "Schreibe 3 Fragen auf, die man stellen kann, um etwas besser zu verstehen" },
+        ]
+      },
+      {
+        name: "Dienstag", duration: "45 Min",
+        focus: "Konflikte im Büro",
+        tasks: [
+          { tag: "komm", text: "Was sind typische Konflikte im Büroalltag? (Missverständnisse, Zeitdruck, Fehler)" },
+          { tag: "komm", text: "Lerne die 'Ich-Botschaft': 'Ich fühle mich...' statt 'Du machst immer...'" },
+          { tag: "schreiben", text: "Schreibe eine Situation auf, wo du die Ich-Botschaft einsetzen könntest" },
+        ]
+      },
+      {
+        name: "Mittwoch", duration: "30 Min",
+        focus: "Selbstorganisation",
+        tasks: [
+          { tag: "praxis", text: "Die Eisenhower-Matrix kennenlernen: Wichtig/Dringend in 4 Quadranten einteilen" },
+          { tag: "praxis", text: "Deine Aufgaben für die Woche nach dieser Methode sortieren" },
+          { tag: "office", text: "To-Do-Liste in Outlook oder OneNote anlegen" },
+        ]
+      },
+      {
+        name: "Donnerstag", duration: "45 Min",
+        focus: "PowerPoint Basics",
+        tasks: [
+          { tag: "office", text: "Eine einfache Präsentation erstellen (5 Folien)" },
+          { tag: "office", text: "Folien: Titelfolie, 3 Inhaltsfolien, Abschlussfolie" },
+          { tag: "praxis", text: "Thema: 'Mein idealer Bürojob' – einfach und übersichtlich gestalten" },
+        ]
+      },
+      {
+        name: "Freitag", duration: "30 Min",
+        focus: "Telefongespräch simulieren",
+        tasks: [
+          { tag: "komm", text: "Schreibe ein kurzes Skript für ein professionelles Kundengespräch am Telefon" },
+          { tag: "komm", text: "Übe es laut vor dem Spiegel oder mit deinem Mann" },
+          { tag: "schreiben", text: "Schreibe danach die Gesprächsnotiz dazu (als würdest du sie wirklich im Büro führen)" },
+        ]
+      }
+    ]
+  },
+  {
+    title: "Woche 8",
+    theme: "Praxiswoche & Abschluss",
+    tip: "Diese Woche simulieren wir einen echten Bürotag. Du hast in 8 Wochen sehr viel gelernt – jetzt zeig es!",
+    days: [
+      {
+        name: "Montag", duration: "60 Min",
+        focus: "Simulierter Bürotag 1",
+        tasks: [
+          { tag: "praxis", text: "Aufgabe: Du bist Büroassistentin in einer kleinen Firma. Schreibe 2 E-Mails (Anfrage + Antwort)" },
+          { tag: "praxis", text: "Erstelle eine Excel-Tabelle mit 5 Eingangsrechnungen des Monats" },
+          { tag: "praxis", text: "Trage 3 Termine in den Outlook-Kalender ein" },
+        ]
+      },
+      {
+        name: "Dienstag", duration: "60 Min",
+        focus: "Simulierter Bürotag 2",
+        tasks: [
+          { tag: "praxis", text: "Schreibe einen formellen Bestellbrief in Word (2 Seiten mit Kopfzeile und Logo-Platzhalter)" },
+          { tag: "praxis", text: "Erstelle eine Rechnung für eine fiktive Beratungsleistung (300€ + 20% USt.)" },
+          { tag: "praxis", text: "Berechne: Wie viel Netto? Wie viel USt.? Wie viel Brutto?" },
+        ]
+      },
+      {
+        name: "Mittwoch", duration: "45 Min",
+        focus: "Schwachstellen aufholen",
+        tasks: [
+          { tag: "praxis", text: "Was war in den 8 Wochen am schwierigsten? Diesen Bereich heute wiederholen" },
+          { tag: "schreiben", text: "Schreibe einen Text (mind. 10 Sätze) ohne Fehler – dann mit Duden-Mentor prüfen" },
+          { tag: "office", text: "Eine Excel-Datei erstellen mit allem was du gelernt hast: Formeln, Format, Diagramm" },
+        ]
+      },
+      {
+        name: "Donnerstag", duration: "45 Min",
+        focus: "Bewerbungsunterlagen vorbereiten",
+        tasks: [
+          { tag: "praxis", text: "Einen professionellen Lebenslauf in Word erstellen (tabellarisch)" },
+          { tag: "praxis", text: "Ein kurzes Bewerbungsschreiben für eine Bürostelle verfassen" },
+          { tag: "praxis", text: "Beide Dokumente als PDF speichern und Dateinamen korrekt benennen" },
+        ]
+      },
+      {
+        name: "Freitag", duration: "30 Min",
+        focus: "🎉 Abschluss & Reflexion",
+        tasks: [
+          { tag: "praxis", text: "Schreibe auf: Was kannst du jetzt, was du vor 8 Wochen nicht konntest?" },
+          { tag: "komm", text: "Was möchtest du als nächstes vertiefen? (Excel Advanced, Buchhaltung, etc.)" },
+          { tag: "praxis", text: "Gratuliere dir selbst – du hast 8 Wochen durchgehalten! Das ist echte Leistung 🏆" },
+        ]
+      }
+    ]
+  }
+];
+
+const tagMap = {
+  office: { label: 'MS Office', cls: 'tag-office' },
+  schreiben: { label: 'Schreiben', cls: 'tag-schreiben' },
+  buch: { label: 'Buchhaltung', cls: 'tag-buch' },
+  komm: { label: 'Kommunikation', cls: 'tag-komm' },
+  praxis: { label: 'Praxis', cls: 'tag-praxis' },
+};
+
+// State
+let state = JSON.parse(localStorage.getItem('uebungsplan') || '{}');
+// state: { completedWeeks: [], checkedTasks: { 'w0d0t0': true } }
+if (!state.completedWeeks) state.completedWeeks = [];
+if (!state.checkedTasks) state.checkedTasks = {};
+
+let currentWeek = 0;
+
+function saveState() {
+  localStorage.setItem('uebungsplan', JSON.stringify(state));
+}
+
+function updateProgress() {
+  const count = state.completedWeeks.length;
+  const pct = (count / 8) * 100;
+  document.getElementById('progress-fill').style.width = pct + '%';
+  document.getElementById('progress-text').textContent = count + ' von 8 Wochen';
+}
+
+function renderNav() {
+  const nav = document.getElementById('week-nav');
+  nav.innerHTML = '';
+  weeks.forEach((w, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'week-btn' + (i === currentWeek ? ' active' : '') + (state.completedWeeks.includes(i) ? ' completed' : '');
+    btn.textContent = 'Woche ' + (i + 1);
+    btn.onclick = () => { currentWeek = i; renderAll(); };
+    nav.appendChild(btn);
+  });
+}
+
+function renderMain() {
+  const w = weeks[currentWeek];
+  const isCompleted = state.completedWeeks.includes(currentWeek);
+  const main = document.getElementById('main-content');
+
+  let html = `
+    <div class="week-header">
+      <div class="week-title">${w.title}</div>
+      <div class="week-subtitle">Montag bis Freitag · täglich 30–60 Minuten</div>
+      <div class="week-theme">${w.theme}</div>
+    </div>
+  `;
+
+  w.days.forEach((day, di) => {
+    const taskKeys = day.tasks.map((_, ti) => `w${currentWeek}d${di}t${ti}`);
+    const allChecked = taskKeys.every(k => state.checkedTasks[k]);
+    const anyOpen = taskKeys.some(k => state.checkedTasks[k]);
+    const isDone = isCompleted || allChecked;
+
+    html += `<div class="day-card ${isDone ? 'done' : ''}" id="card-${di}">
+      <div class="day-header" onclick="toggleCard(${di})">
+        <div class="day-dot">${isDone ? '✓' : (di + 1)}</div>
+        <div class="day-info">
+          <div class="day-name">${day.name}</div>
+          <div class="day-focus">${day.focus}</div>
+        </div>
+        <div class="day-duration">${day.duration}</div>
+      </div>
+      <div class="day-tasks">`;
+
+    day.tasks.forEach((task, ti) => {
+      const key = `w${currentWeek}d${di}t${ti}`;
+      const checked = state.checkedTasks[key] ? 'checked' : '';
+      const tag = tagMap[task.tag];
+      html += `<div class="task-item">
+        <div class="task-check ${checked}" onclick="toggleTask('${key}', ${di}, ${ti})" id="check-${key}"></div>
+        <div class="task-text"><span class="task-tag ${tag.cls}">${tag.label}</span>${task.text}</div>
+      </div>`;
+    });
+
+    html += `</div></div>`;
+  });
+
+  // Sunday rest
+  html += `<div class="rest-card"><div class="rest-icon">😴</div><div><strong>Samstag & Sonntag</strong> – Wochenende! Erholen, wiederholen oder einfach frei lassen. Lernen braucht Pausen.</div></div>`;
+
+  // Tip box
+  html += `<div class="tip-box"><strong>💡 Tipp der Woche</strong>${w.tip}</div>`;
+
+  // Mark button
+  if (!isCompleted) {
+    html += `<button class="mark-btn" onclick="markWeekDone()">✓ Woche ${currentWeek + 1} als erledigt markieren</button>`;
+  } else {
+    html += `<button class="mark-btn done-btn" onclick="unmarkWeek()">✓ Woche ${currentWeek + 1} abgeschlossen – Rückgängig?</button>`;
+  }
+
+  // Resources (only week 1)
+  if (currentWeek === 0) {
+    html += `<div class="resources">
+      <h3>📚 Kostenlose Lernquellen</h3>
+      <div class="resource-item"><div class="resource-icon">📖</div><div>Rechtschreibung prüfen – <a href="https://duden.de" target="_blank">duden.de</a></div></div>
+      <div class="resource-item"><div class="resource-icon">📊</div><div>Excel Übungen auf Deutsch – <a href="https://bildungsbibel.de/excel-uebungen" target="_blank">bildungsbibel.de/excel-uebungen</a></div></div>
+      <div class="resource-item"><div class="resource-icon">🎓</div><div>Microsoft Schulungen – <a href="https://support.microsoft.com" target="_blank">support.microsoft.com</a> → "Schulungen"</div></div>
+      <div class="resource-item"><div class="resource-icon">✉️</div><div>Briefmuster Österreich – Google: "österreichischer Geschäftsbrief Muster"</div></div>
+    </div>`;
+  }
+
+  main.innerHTML = html;
+}
+
+function renderAll() {
+  renderNav();
+  renderMain();
+  updateProgress();
+}
+
+function toggleCard(di) {
+  const card = document.getElementById('card-' + di);
+  card.classList.toggle('open');
+}
+
+function toggleTask(key, di, ti) {
+  state.checkedTasks[key] = !state.checkedTasks[key];
+  saveState();
+  renderAll();
+  // Scroll to keep position
+}
+
+function markWeekDone() {
+  if (!state.completedWeeks.includes(currentWeek)) {
+    state.completedWeeks.push(currentWeek);
+    saveState();
+  }
+  renderAll();
+}
+
+function unmarkWeek() {
+  state.completedWeeks = state.completedWeeks.filter(w => w !== currentWeek);
+  saveState();
+  renderAll();
+}
+
+renderAll();
+</script>
+</body>
+</html>
